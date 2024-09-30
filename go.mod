@@ -1,4 +1,4 @@
-module t0
+module t
 
 go 1.19
 

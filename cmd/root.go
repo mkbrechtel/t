@@ -2,21 +2,22 @@ package cmd
 
 import (
 	"os"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "t0",
-	Short: "t0 is a todo and time tracker",
-	Long: `t0 is a todo and time tracker
+	Use:   "t",
+	Short: "t is a todo and time tracker",
+	Long: `t is a todo and time tracker
 
 	manage your todo list with
-		t0 todo
+		t todo
 
 	track your time with
-		t0 time
+		t time
 `,
 }
 

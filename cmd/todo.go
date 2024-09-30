@@ -1,11 +1,11 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
@@ -13,7 +13,7 @@ import (
 var todoCmd = &cobra.Command{
 	Use:   "todo",
 	Short: "Manage your todo list",
-	Long: `t0 todo
+	Long: `t todo
 	
 	With this command you can manage your todo list. 
 	
@@ -61,8 +61,6 @@ func init() {
 	// is called directly, e.g.:
 	// todoCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-
 	todoCmd.AddCommand(todoAddCmd)
 	todoCmd.AddCommand(todoTodayCmd)
 }
-
