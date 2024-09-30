@@ -30,6 +30,19 @@ It either takes the task from the command line argument or multiple tasks in the
 	},
 }
 
+// todoAddCmd represents the todo add command
+var todoTodayCmd = &cobra.Command{
+	Use:   "today",
+	Short: "Show todays todos",
+	Long: `With this command you can view todays tasks on your todo list.
+
+This filters the tasks from your todo file by some filter magic WIP
+`,
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(todoFile)
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(todoCmd)
 
@@ -45,5 +58,6 @@ func init() {
 
 
 	todoCmd.AddCommand(todoAddCmd)
+	todoCmd.AddCommand(todoTodayCmd)
 }
 
