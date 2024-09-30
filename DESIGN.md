@@ -20,6 +20,7 @@ This tool is supposed to help me with my time management. It is based on the ide
 ### activitiy tracker
 - based on timeclock format
 - uses the uuid convention to 
+- use i3 socket protocol to automatically guess what i am currently doing
 
 ### i3/sway support
 - i3blocks status output
