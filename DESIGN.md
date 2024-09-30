@@ -4,9 +4,9 @@ goal: simple application for some tasks to aid me in my time and management
 
 ## language selection
 - Go
+    - todotxt lib: https://github.com/1set/todotxt
 - Python
-- Rust
-- JavaScript
+    - todotxt lib: https://vonshednob.cc/pytodotxt/
 
 ## pitch
 This tool is supposed to help me with my time management. It is based on the ideas of Getting Things Done and timeboxing. You can select one activity you are currently doing and 
