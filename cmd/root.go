@@ -12,11 +12,11 @@ var rootCmd = &cobra.Command{
 	Short: "t0 is a todo and time tracker",
 	Long: `t0 is a todo and time tracker
 
-manage your todo list with
-	t0 todo
+	manage your todo list with
+		t0 todo
 
-track your time with
-	t0 time
+	track your time with
+		t0 time
 `,
 }
 
@@ -34,6 +34,6 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", "config file")
-	rootCmd.PersistentFlags().StringVarP(&todoFile, "todoFile", "t", "", "todo.txt file")
+	rootCmd.PersistentFlags().StringVarP(&todoFile, "todoFile", "t", "todo.txt", "todo.txt file")
 	viper.BindPFlag("todoFile", rootCmd.PersistentFlags().Lookup("todoFile"))
 }

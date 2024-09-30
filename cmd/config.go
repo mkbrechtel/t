@@ -18,7 +18,9 @@ var configFile string
 var configCmd = &cobra.Command{
 	Use:   "config",
 	Short: "Show your t0 config",
-	Long: `With this command you can show your t0 configuration.`,
+	Long: `t0 config
+
+	With this command you can show your t0 configuration.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(yamlStringSettings())
 	},

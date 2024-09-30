@@ -13,18 +13,23 @@ import (
 var todoCmd = &cobra.Command{
 	Use:   "todo",
 	Short: "Manage your todo list",
-	Long: `With this command you can manage your todo list. The todo list is based on the todo.txt format.`,
+	Long: `t0 todo
+	
+	With this command you can manage your todo list. 
+	
+	The todo list is based on the todo.txt format. See http://todotxt.org
+	`,
 }
-
 
 // todoAddCmd represents the todo add command
 var todoAddCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add a task to your todo list",
-	Long: `With this command you can add tasks to your todo list.
+	Long: `
+	With this command you can add tasks to your todo list.
 
-It either takes the task from the command line argument or multiple tasks in the form of todo.txt lines as standard input.
-`,
+	It either takes the task from the command line argument or multiple tasks in the form of todo.txt lines as standard input.
+	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("todoAdd called")
 	},
