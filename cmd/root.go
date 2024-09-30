@@ -36,5 +36,5 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "", "config file")
 	rootCmd.PersistentFlags().StringVarP(&todoFile, "todoFile", "t", "todo.txt", "todo.txt file")
-	viper.BindPFlag("todoFile", rootCmd.PersistentFlags().Lookup("todoFile"))
+	viper.BindPFlag("todo.file", rootCmd.PersistentFlags().Lookup("todoFile"))
 }
