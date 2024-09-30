@@ -1,6 +1,6 @@
 # t0 software design
 
-goal: simple application for some tasks to aid me in my time tracking and todo management
+goal: simple application for some tasks to aid me in my time and management
 
 ## language selection
 - Go
@@ -15,11 +15,11 @@ This tool is supposed to help me with my time management. It is based on the ide
 
 ### todo list manager
 - based on todo.txt format
-- 
+- basic cli for adding, searching, changing and sorting tasks
 
 ### activitiy tracker
 - based on timeclock format
-- uses the uuid convention to 
+- select a todo task as the current activity
 - use i3 socket protocol to automatically guess what i am currently doing
 
 ### i3/sway support
