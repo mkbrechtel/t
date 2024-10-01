@@ -7,6 +7,8 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+
+	"t/todo"
 )
 
 // todoCmd represents the todo command
@@ -31,7 +33,7 @@ var todoAddCmd = &cobra.Command{
 	It either takes the task from the command line argument or multiple tasks in the form of todo.txt lines as standard input.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("todoAdd called")
+		todo.ReadTodoFile(todoFile)
 	},
 }
 
