@@ -34,7 +34,6 @@ func EnsureProperTasks(taskList todo.TaskList)(todo.TaskList) {
 		// make sure task has uuid
 		if _, hasUuid := taskList[i].AdditionalTags["uuid"]; !hasUuid {
 			taskList[i].AdditionalTags["uuid"] = uuid.Must(uuid.NewV7()).String()
-			fmt.Println("uuid", taskList[i].AdditionalTags)
 		}
     }
 	return taskList
