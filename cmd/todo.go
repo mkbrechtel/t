@@ -24,16 +24,16 @@ var todoCmd = &cobra.Command{
 }
 
 // todoAddCmd represents the todo add command
-var todoAddCmd = &cobra.Command{
-	Use:   "add",
+var todoUpdateCmd = &cobra.Command{
+	Use:   "update",
 	Short: "Add a task to your todo list",
-	Long: `
+	Long: `t todo update
 	With this command you can add tasks to your todo list.
 
 	It either takes the task from the command line argument or multiple tasks in the form of todo.txt lines as standard input.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		todo.ReadTodoFile(todoFile)
+		todo.UpdateTodoFile(todoFile)
 	},
 }
 
@@ -63,6 +63,6 @@ func init() {
 	// is called directly, e.g.:
 	// todoCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	todoCmd.AddCommand(todoAddCmd)
+	todoCmd.AddCommand(todoUpdateCmd)
 	todoCmd.AddCommand(todoTodayCmd)
 }

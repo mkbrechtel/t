@@ -8,12 +8,11 @@ import (
 	uuid "github.com/gofrs/uuid/v5"
 )
 
-func ReadTodoFile(todoFile string) {
+func UpdateTodoFile(todoFile string) {
 	if taskList, err := todo.LoadFromPath(todoFile); err != nil {
 		log.Fatal(err)
 	} else {
 		EnsureProperTasks(taskList)
-		PrintTaskList(taskList)
 		if err = taskList.WriteToPath(todoFile); err != nil {
 			log.Fatal(err)
 		}
