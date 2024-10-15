@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 	todo "github.com/1set/todotxt"
-	uuid "github.com/gofrs/uuid/v5"
+	"t/utils"
 )
 
 func ReadTodoFile(todoFile string) {
@@ -33,7 +33,7 @@ func EnsureProperTasks(taskList todo.TaskList)(todo.TaskList) {
 		}
 		// make sure task has uuid
 		if _, hasUuid := taskList[i].AdditionalTags["uuid"]; !hasUuid {
-			taskList[i].AdditionalTags["uuid"] = uuid.Must(uuid.NewV7()).String()
+			taskList[i].AdditionalTags["uuid"] = utils.LongEncodeUUID(utils.NewUUID())
 		}
     }
 	return taskList
