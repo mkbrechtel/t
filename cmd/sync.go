@@ -4,8 +4,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"fmt"
-
 	"t/sync/openproject"
 
 )
@@ -31,24 +29,7 @@ var syncOpenProjectCmd = &cobra.Command{
 		// Fetch the work packages from OpenProject
 		syncOpenProjectUrl := viper.GetString("sync.openproject.url")
 		syncOpenProjectApiKey := viper.GetString("sync.openproject.api-key")
-		_, err := openproject.GetWorkPackages(syncOpenProjectUrl,syncOpenProjectApiKey)
-
-		fmt.Print(err.Error())
-
-		// // Check if the response contains work packages
-		// if len(opResponse.WorkPackages) == 0 {
-		// 	fmt.Println("No work packages found.")
-		// 	return
-		// }
-
-		// // Process each work package
-		// for _, wp := range opResponse.WorkPackages {
-		// 	fmt.Printf("Work Package ID: %d\n", wp.ID)
-		// 	fmt.Printf("Subject: %s\n", wp.Subject)
-		// 	fmt.Printf("Description (Raw): %s\n", wp.Description.Raw)
-		// 	// You can add more processing here, like saving to a database or performing actions based on the work package
-		// }
-		return
+		openproject.GetWorkPackages(syncOpenProjectUrl,syncOpenProjectApiKey)
 	},
 }
 
