@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 	todo "github.com/1set/todotxt"
-	uuid "github.com/gofrs/uuid/v5"
+	"t/utils"
 )
 
 func UpdateTodoFile(todoFile string) {
@@ -30,9 +30,15 @@ func EnsureProperTasks(taskList todo.TaskList)(todo.TaskList) {
 		if (taskList[i].AdditionalTags == nil) {
 			taskList[i].AdditionalTags = make(map[string]string)
 		}
-		// make sure task has uuid
-		if _, hasUuid := taskList[i].AdditionalTags["uuid"]; !hasUuid {
-			taskList[i].AdditionalTags["uuid"] = uuid.Must(uuid.NewV7()).String()
+		id := utils.NewUUID()
+		// take uuid if it is there and remove it
+		if _, hasUuid := taskList[i].AdditionalTags["uuid"]; hasUuid {
+			id = utils.DecodeUUID(taskList[i].AdditionalTags["uuid"])
+			delete(taskList[i].AdditionalTags, "uuid")
+		}
+		// set id
+		if _, hasId := taskList[i].AdditionalTags["id"]; !hasId {
+			taskList[i].AdditionalTags["id"] = utils.EncodeUUID(id)
 		}
     }
 	return taskList
