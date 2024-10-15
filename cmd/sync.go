@@ -1,11 +1,11 @@
 package cmd
 
 import (
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"t/sync/openproject"
-
 )
 
 var syncCmd = &cobra.Command{
@@ -26,10 +26,12 @@ var syncOpenProjectCmd = &cobra.Command{
 	With this command you can sync with OpenProject.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// Fetch the work packages from OpenProject
-		syncOpenProjectUrl := viper.GetString("sync.openproject.url")
-		syncOpenProjectApiKey := viper.GetString("sync.openproject.api-key")
-		openproject.GetWorkPackages(syncOpenProjectUrl,syncOpenProjectApiKey)
+		url := viper.GetString("sync.openproject.url")
+		apiKey := viper.GetString("sync.openproject.api-key")
+		queryId := viper.GetString("sync.openproject.query-id")
+
+		workPackages,_ := openproject.GetWorkPackages(url, apiKey, queryId)
+		openproject.PrintWorkPackages(workPackages)
 	},
 }
 
@@ -39,8 +41,10 @@ func init() {
 
     syncOpenProjectCmd.PersistentFlags().String("url", "", "OpenProject URL")
     syncOpenProjectCmd.PersistentFlags().String("api-key", "", "OpenProject API Key")
+    syncOpenProjectCmd.PersistentFlags().String("query-id", "", "OpenProject Query ID")
 
     viper.BindPFlag("sync.openproject.url", syncOpenProjectCmd.PersistentFlags().Lookup("url"))
     viper.BindPFlag("sync.openproject.api-key", syncOpenProjectCmd.PersistentFlags().Lookup("api-key"))
+    viper.BindPFlag("sync.openproject.query-id", syncOpenProjectCmd.PersistentFlags().Lookup("query-id"))
 
 }
