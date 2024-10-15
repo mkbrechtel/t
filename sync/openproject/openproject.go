@@ -9,22 +9,46 @@ import (
 
 // WorkPackage represents the structure of a work package from OpenProject's API
 type WorkPackage struct {
-	ID                int         `json:"id"`
-	Subject           string      `json:"subject"`
-	Description       Description `json:"description"`
-	DueDate           string      `json:"dueDate"`
-	DerivedDueDate    string      `json:"derivedDueDate"`
-	DerivedStartDate  string      `json:"derivedStartDate"`
-	LockVersion       int         `json:"lockVersion"`
-	ScheduleManually  bool        `json:"scheduleManually"`
-	StartDate         string      `json:"startDate"`
-	EstimatedTime     interface{} `json:"estimatedTime"`
-	Duration          string      `json:"duration"`
-	PercentageDone    int         `json:"percentageDone"`
-	CreatedAt         string      `json:"createdAt"`
-	UpdatedAt         string      `json:"updatedAt"`
-	Readonly          bool        `json:"readonly"`
-	// Add other fields as necessary
+    DerivedStartDate   string `json:"derivedStartDate"`
+    DerivedDueDate     string `json:"derivedDueDate"`
+    Type               string `json:"type"`
+    Status             string `json:"status"`
+    Project            string `json:"project"`
+    ID                 int    `json:"id"`
+    LockVersion        int    `json:"lockVersion"`
+    Subject            string `json:"subject"`
+    Description        struct {
+        Format string `json:"format"`
+        Raw    string `json:"raw"`
+        HTML   string `json:"html"`
+    } `json:"description"`
+    ScheduleManually   bool `json:"scheduleManually"`
+    StartDate          string `json:"startDate"`
+    DueDate            string `json:"dueDate"`
+    EstimatedTime      *int   `json:"estimatedTime,omitempty"`
+    DerivedEstimatedTime *int `json:"derivedEstimatedTime,omitempty"`
+    Duration           string `json:"duration"`
+    IgnoreNonWorkingDays bool `json:"ignoreNonWorkingDays"`
+    PercentageDone     int    `json:"percentageDone"`
+    CreatedAt          string `json:"createdAt"`
+    UpdatedAt          string `json:"updatedAt"`
+    Readonly           bool   `json:"readonly"`
+    CustomFields       map[string]interface{} `json:"customFields"` // Flexible for various custom fields
+
+    Links              struct {
+        Type struct {
+            Href  string `json:"href"`
+            Title string `json:"title"`
+        } `json:"type"`
+        Status struct {
+            Href  string `json:"href"`
+            Title string `json:"title"`
+        } `json:"status"`
+        Project struct {
+            Href  string `json:"href"`
+            Title string `json:"title"`
+        } `json:"project"`
+    } `json:"_links"` // Correctly formatted JSON tag for the _links field
 }
 
 // Description represents the structure of the work package's description
@@ -92,6 +116,9 @@ func PrintWorkPackages(workPackages []WorkPackage) {
 	for _, wp := range workPackages {
 		fmt.Printf("ID: %d\n", wp.ID)
 		fmt.Printf("Subject: %s\n", wp.Subject)
+		fmt.Printf("Type: %s\n", wp.Links.Type.Title)
+		fmt.Printf("Project: %s\n", wp.Links.Project.Title)
+		fmt.Printf("Status: %s\n", wp.Links.Status.Title)
 		fmt.Printf("Due Date: %s\n", wp.DueDate)
 		fmt.Printf("Derived Due Date: %s\n", wp.DerivedDueDate)
 		fmt.Printf("Start Date: %s\n", wp.StartDate)
