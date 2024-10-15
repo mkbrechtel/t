@@ -28,6 +28,7 @@ var todoUpdateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Add a task to your todo list",
 	Long: `t todo update
+
 	With this command you can add tasks to your todo list.
 
 	It either takes the task from the command line argument or multiple tasks in the form of todo.txt lines as standard input.
@@ -43,7 +44,7 @@ var todoTodayCmd = &cobra.Command{
 	Short: "Show todays todos",
 	Long: `With this command you can view todays tasks on your todo list.
 
-This filters the tasks from your todo file by some filter magic WIP
+	This filters the tasks from your todo file by some filter magic WIP
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(todoFile)
