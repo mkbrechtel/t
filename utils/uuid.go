@@ -18,6 +18,10 @@ func LongEncodeUUID (uid uuidv7.UUID) (lid string) {
 	return uid.String()
 }
 
+func EncodeUUID (uid uuidv7.UUID) (lid string) {
+	return ShortEncodeUUID(uid)
+}
+
 func DecodeUUID  (encid string) (uid uuidv7.UUID) {
 	if (len(encid) == 36) {
 		u, err := uuidv7.FromString(encid)
