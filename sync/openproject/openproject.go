@@ -170,7 +170,7 @@ func CreateTaskList(workPackages []WorkPackage, prefix string, opUrl string) tod
 		}
 
 		// Map the work package fields to the todo.Task fields
-		to.Todo = prefix + wp.Links.Type.Title + ": " + wp.Subject
+		to.Todo = prefix + wp.Links.Project.Title + ": " + wp.Links.Type.Title + ": " + wp.Subject
 
 		// Set the creation date if available
 		if wp.CreatedAt != "" {
