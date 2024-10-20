@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -32,6 +33,8 @@ var syncOpenProjectCmd = &cobra.Command{
 
 		workPackages,_ := openproject.GetWorkPackages(url, apiKey, queryId)
 		openproject.PrintWorkPackages(workPackages)
+		tl := openproject.CreateTaskList(workPackages)
+		tl.WriteToFile(os.Stdout)
 	},
 }
 

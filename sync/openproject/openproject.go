@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
+
+	todo "github.com/1set/todotxt"
 )
 
 // WorkPackage represents the structure of a work package from OpenProject's API
@@ -125,4 +128,67 @@ func PrintWorkPackages(workPackages []WorkPackage) {
 		fmt.Printf("Percentage Done: %d%%\n", wp.PercentageDone)
 		fmt.Println("-----")
 	}
+}
+
+
+
+// type todo.Task struct {
+// 	ID             int    // Internal task ID.
+// 	Original       string // Original raw task text.
+// 	Todo           string // Todo part of task text.
+// 	Priority       string
+// 	Projects       []string
+// 	Contexts       []string
+// 	AdditionalTags map[string]string // Addon tags will be available here.
+// 	CreatedDate    time.Time
+// 	DueDate        time.Time
+// 	CompletedDate  time.Time
+// 	Completed      bool
+// }
+
+
+
+func CreateTaskList(workPackages []WorkPackage) todo.TaskList {
+	tl := todo.NewTaskList()
+
+	for _, wp := range workPackages {
+		to := todo.NewTask()
+
+		// Make sure task has a AdditionalTags map
+		if (to.AdditionalTags == nil) {
+			to.AdditionalTags = make(map[string]string)
+		}
+		
+		// Map the work package fields to the todo.Task fields
+		to.Todo = wp.Subject
+
+		// Set the creation date if available
+		if wp.CreatedAt != "" {
+			createdDate, err := time.Parse(time.RFC3339, wp.CreatedAt)
+			if err == nil {
+				to.CreatedDate = createdDate
+			}
+		}
+
+		// Set the Threshold Date to the Start Date
+		if wp.StartDate != "" {
+			to.AdditionalTags["t"] = wp.StartDate
+		}
+		
+		// Set the due date if available, otherwise leave it empty
+		if wp.DueDate != "" {
+			dueDate, err := time.Parse("2006-01-02", wp.DueDate) // Assuming ISO 8601 format
+			if err == nil {
+				to.DueDate = dueDate
+			}
+		}
+
+		// Map project
+		to.Projects = []string{wp.Links.Project.Title}
+
+		// Add task to the task list
+		tl.AddTask(&to)
+	}
+
+	return tl
 }
