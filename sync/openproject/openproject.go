@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"time"
+	"strings"
 
 	todo "github.com/1set/todotxt"
 )
@@ -120,7 +121,7 @@ func PrintWorkPackages(workPackages []WorkPackage) {
 		fmt.Printf("ID: %d\n", wp.ID)
 		fmt.Printf("Subject: %s\n", wp.Subject)
 		fmt.Printf("Type: %s\n", wp.Links.Type.Title)
-		fmt.Printf("Project: %s\n", wp.Links.Project.Title)
+		fmt.Printf("Project: %s\n", wp.Links.Project)
 		fmt.Printf("Status: %s\n", wp.Links.Status.Title)
 		fmt.Printf("Due Date: %s\n", wp.DueDate)
 		fmt.Printf("Derived Due Date: %s\n", wp.DerivedDueDate)
@@ -146,10 +147,19 @@ func PrintWorkPackages(workPackages []WorkPackage) {
 // 	Completed      bool
 // }
 
+func EnsureSpaceAtEnd(prefix string) string {
+	// Check if the string already ends with a space
+	if strings.HasSuffix(prefix, " ") {
+		return prefix
+	}
+	// If not, add a space
+	return prefix + " "
+}
 
-
-func CreateTaskList(workPackages []WorkPackage) todo.TaskList {
+func CreateTaskList(workPackages []WorkPackage, prefix string, opUrl string) todo.TaskList {
 	tl := todo.NewTaskList()
+
+	prefix = EnsureSpaceAtEnd(prefix)
 
 	for _, wp := range workPackages {
 		to := todo.NewTask()
@@ -158,9 +168,9 @@ func CreateTaskList(workPackages []WorkPackage) todo.TaskList {
 		if (to.AdditionalTags == nil) {
 			to.AdditionalTags = make(map[string]string)
 		}
-		
+
 		// Map the work package fields to the todo.Task fields
-		to.Todo = wp.Subject
+		to.Todo = prefix + wp.Links.Type.Title + ": " + wp.Subject
 
 		// Set the creation date if available
 		if wp.CreatedAt != "" {
@@ -184,7 +194,10 @@ func CreateTaskList(workPackages []WorkPackage) todo.TaskList {
 		}
 
 		// Map project
-		to.Projects = []string{wp.Links.Project.Title}
+		//to.Projects = []string{wp.Links.Project.Title}
+
+		// Add URL
+		to.AdditionalTags["url"] = opUrl + "/wp/" + fmt.Sprintf("%v",wp.ID);
 
 		// Add task to the task list
 		tl.AddTask(&to)

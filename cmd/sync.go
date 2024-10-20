@@ -30,10 +30,11 @@ var syncOpenProjectCmd = &cobra.Command{
 		url := viper.GetString("sync.openproject.url")
 		apiKey := viper.GetString("sync.openproject.api-key")
 		queryId := viper.GetString("sync.openproject.query-id")
+		prefix := viper.GetString("sync.openproject.todo-prefix")
 
 		workPackages,_ := openproject.GetWorkPackages(url, apiKey, queryId)
 		openproject.PrintWorkPackages(workPackages)
-		tl := openproject.CreateTaskList(workPackages)
+		tl := openproject.CreateTaskList(workPackages, prefix, url)
 		tl.WriteToFile(os.Stdout)
 	},
 }
@@ -45,9 +46,11 @@ func init() {
     syncOpenProjectCmd.PersistentFlags().String("url", "", "OpenProject URL")
     syncOpenProjectCmd.PersistentFlags().String("api-key", "", "OpenProject API Key")
     syncOpenProjectCmd.PersistentFlags().String("query-id", "", "OpenProject Query ID")
+    syncOpenProjectCmd.PersistentFlags().String("todo-prefix", "", "Prefix for OpenProject todos created by t")
 
     viper.BindPFlag("sync.openproject.url", syncOpenProjectCmd.PersistentFlags().Lookup("url"))
     viper.BindPFlag("sync.openproject.api-key", syncOpenProjectCmd.PersistentFlags().Lookup("api-key"))
     viper.BindPFlag("sync.openproject.query-id", syncOpenProjectCmd.PersistentFlags().Lookup("query-id"))
+    viper.BindPFlag("sync.openproject.todo-prefix", syncOpenProjectCmd.PersistentFlags().Lookup("todo-prefix"))
 
 }
