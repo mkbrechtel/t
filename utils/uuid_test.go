@@ -15,8 +15,8 @@ func TestNewUUID(t *testing.T) {
 
 func TestStaticUUIDTransformations(t *testing.T) {
 	// Static test values
-	expectedUUID := "0192d9fd-d725-765d-8305-a5cdcd3ffe63"
-	expectedShortEncoding := "AZLZ_dcldl2DBaXNzT_-Yw"
+	expectedUUID := "0192da75-c158-7d7f-be3c-d5b647bf7fa8"
+	expectedShortEncoding := "AZLadcFYfX9898PNW2R79990qA"
 	expectedLongEncoding := expectedUUID
 
 	// Create our base UUID

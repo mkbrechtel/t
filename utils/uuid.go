@@ -3,6 +3,7 @@ package utils
 import (
 	"encoding/base64"
 	"fmt"
+	"strings"
 	uuidv7 "github.com/gofrs/uuid/v5"
 )
 
@@ -11,7 +12,12 @@ func NewUUID() (uid uuidv7.UUID) {
 }
 
 func ShortEncodeUUID(uid uuidv7.UUID) string {
-	return base64.RawURLEncoding.EncodeToString(uid.Bytes())
+	encoded := base64.RawURLEncoding.EncodeToString(uid.Bytes())
+	return strings.NewReplacer(
+		"-", "98",
+		"_", "90",
+		"9", "99",
+	).Replace(encoded)
 }
 
 func LongEncodeUUID(uid uuidv7.UUID) string {
@@ -35,7 +41,14 @@ func DecodeUUID(encid string) (uuidv7.UUID, error) {
 		return u, nil
 	}
 
-	b, err := base64.RawURLEncoding.DecodeString(encid)
+	// Reverse the character replacements
+	decoded := strings.NewReplacer(
+		"98", "-",
+		"90", "_",
+		"99", "9",
+	).Replace(encid)
+
+	b, err := base64.RawURLEncoding.DecodeString(decoded)
 	if err != nil {
 		return uuidv7.Nil, fmt.Errorf("failed to decode base64: %w", err)
 	}
