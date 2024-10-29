@@ -1,12 +1,10 @@
-/*
-Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"t/todo"
 )
@@ -23,47 +21,51 @@ var todoCmd = &cobra.Command{
 	`,
 }
 
-// todoAddCmd represents the todo add command
+// todoUpdateCmd represents the todo update command
 var todoUpdateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "Add a task to your todo list",
+	Short: "Update and ensure properties of tasks in your todo list",
 	Long: `t todo update
 
-	With this command you can add tasks to your todo list.
+	With this command you can update your todo list tasks to ensure they have all required properties:
+	- Completion dates for completed tasks
+	- Unique identifiers (short or long form)
+	- Default tags
 
-	It either takes the task from the command line argument or multiple tasks in the form of todo.txt lines as standard input.
+	It processes the entire todo.txt file and updates task properties according to configuration.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		todo.UpdateTodoFile(todoFile)
-	},
-}
+		taskList, err := todo.ReadTodoFile(todoFile)
+		if err != nil {
+			log.Fatalf("Failed to read todo file: %v", err)
+		}
 
-// todoAddCmd represents the todo add command
-var todoTodayCmd = &cobra.Command{
-	Use:   "today",
-	Short: "Show todays todos",
-	Long: `With this command you can view todays tasks on your todo list.
+		config := todo.DefaultEnsureConfig
+		// Set default tags that should be applied to all tasks
+		config.DefaultTags = map[string]string{
+			// "app":     "t",
+			// "version": "1.0",
+		}
 
-	This filters the tasks from your todo file by some filter magic WIP
-`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(todoFile)
+		taskList = todo.EnsureTaskListProperties(taskList, config)
+
+		if err = todo.WriteTodoFile(taskList, todoFile); err != nil {
+			log.Fatalf("Failed to write todo file: %v", err)
+		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(todoCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// todoCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// todoCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
+	// Add todo subcommands
 	todoCmd.AddCommand(todoUpdateCmd)
-	todoCmd.AddCommand(todoTodayCmd)
+
+	// Add configuration flags
+	todoCmd.PersistentFlags().Bool("prefer-short-ids", true, "Use short form IDs instead of UUIDs")
+	todoCmd.PersistentFlags().Bool("enforce-completion-date", true, "Ensure completed tasks have completion dates")
+	
+	// Bind flags to viper configuration
+	viper.BindPFlag("todo.ensure.preferShortIds", todoCmd.PersistentFlags().Lookup("prefer-short-ids"))
+	viper.BindPFlag("todo.ensure.enforceCompletionDate", todoCmd.PersistentFlags().Lookup("enforce-completion-date"))
 }

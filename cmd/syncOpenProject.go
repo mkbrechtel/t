@@ -61,9 +61,6 @@ var syncOpenProjectCmd = &cobra.Command{
             os.Exit(1)
         }
 
-        // Ensure all tasks have proper metadata
-        targetList = todo.EnsureProperTasks(targetList)
-
         // Perform sync
         fmt.Println("Syncing tasks...")
         updatedList, result, err := todo.SyncTaskLists(targetList, sourceList)
