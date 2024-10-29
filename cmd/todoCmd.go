@@ -63,9 +63,11 @@ func init() {
 
 	// Add configuration flags
 	todoCmd.PersistentFlags().Bool("prefer-short-ids", true, "Use short form IDs instead of UUIDs")
+    todoCmd.PersistentFlags().Bool("enforce-creation-date", true, "Ensure tasks have creation dates")
 	todoCmd.PersistentFlags().Bool("enforce-completion-date", true, "Ensure completed tasks have completion dates")
 	
 	// Bind flags to viper configuration
 	viper.BindPFlag("todo.ensure.preferShortIds", todoCmd.PersistentFlags().Lookup("prefer-short-ids"))
+    viper.BindPFlag("todo.ensure.enforceCreationDate", todoCmd.PersistentFlags().Lookup("enforce-creation-date"))
 	viper.BindPFlag("todo.ensure.enforceCompletionDate", todoCmd.PersistentFlags().Lookup("enforce-completion-date"))
 }

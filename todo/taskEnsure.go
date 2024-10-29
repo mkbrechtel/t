@@ -12,6 +12,8 @@ type TaskEnsureConfig struct {
 	PreferShortIDs bool
 	// EnforceCompletionDate determines whether completed tasks must have a completion date
 	EnforceCompletionDate bool
+	// EnforceCreationDate determines whether tasks must have a creation date
+	EnforceCreationDate bool
 	// DefaultTags are additional tags that should be present on all tasks
 	DefaultTags map[string]string
 }
@@ -20,11 +22,13 @@ type TaskEnsureConfig struct {
 var DefaultEnsureConfig = TaskEnsureConfig{
 	PreferShortIDs:        true,
 	EnforceCompletionDate: true,
+	EnforceCreationDate:   true,
 	DefaultTags:           make(map[string]string),
 }
 
 // EnsureTaskProperties ensures a single task has all required properties according to the config
 func EnsureTaskProperties(task *todo.Task, config TaskEnsureConfig) {
+	ensureCreationDate(task, config)
 	ensureCompletionDate(task, config)
 	ensureIdentifier(task, config)
 	ensureDefaultTags(task, config)
@@ -36,6 +40,13 @@ func EnsureTaskListProperties(taskList todo.TaskList, config TaskEnsureConfig) t
 		EnsureTaskProperties(&taskList[i], config)
 	}
 	return taskList
+}
+
+// ensureCreationDate ensures tasks have a creation date
+func ensureCreationDate(task *todo.Task, config TaskEnsureConfig) {
+	if config.EnforceCreationDate && !task.HasCreatedDate() {
+		task.CreatedDate = time.Now()
+	}
 }
 
 // ensureCompletionDate ensures completed tasks have a completion date
