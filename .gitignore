@@ -1,3 +1,5 @@
 # ignore t binary
 /t
 /todo.txt
+/backlog.txt
+/done.txt
