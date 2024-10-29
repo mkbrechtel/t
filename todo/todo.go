@@ -19,7 +19,6 @@ func UpdateTodoFile(todoFile string) {
 	}
 }
 
-
 func EnsureProperTasks(taskList todo.TaskList)(todo.TaskList) {
 	for i, t := range taskList {
 		// make sure task has created date
@@ -32,8 +31,13 @@ func EnsureProperTasks(taskList todo.TaskList)(todo.TaskList) {
 		}
 		id := utils.NewUUID()
 		// take uuid if it is there and remove it
-		if _, hasUuid := taskList[i].AdditionalTags["uuid"]; hasUuid {
-			id = utils.DecodeUUID(taskList[i].AdditionalTags["uuid"])
+		if uuidStr, hasUuid := taskList[i].AdditionalTags["uuid"]; hasUuid {
+			parsedId, err := utils.DecodeUUID(uuidStr)
+			if err != nil {
+				log.Printf("Error decoding UUID %s: %v, generating new one", uuidStr, err)
+			} else {
+				id = parsedId
+			}
 			delete(taskList[i].AdditionalTags, "uuid")
 		}
 		// set id
