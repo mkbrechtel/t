@@ -13,58 +13,81 @@ func TestNewUUID(t *testing.T) {
 	}
 }
 
-func TestUUIDEncodingDecoding(t *testing.T) {
-	// Setup test UUID
-	staticUUID := uuidv7.Must(uuidv7.FromString("0192d9f7-edc6-76d8-8aae-c9b5b0237c0d"))
+func TestStaticUUIDTransformations(t *testing.T) {
+	// Static test values
+	expectedUUID := "0192d9fd-d725-765d-8305-a5cdcd3ffe63"
+	expectedShortEncoding := "AZLZ_dcldl2DBaXNzT_-Yw"
+	expectedLongEncoding := expectedUUID
 
-	tests := []struct {
-		name     string
-		testFunc func(t *testing.T)
-	}{
-		{
-			name: "Test Short Encoding and Decoding",
-			testFunc: func(t *testing.T) {
-				encoded := ShortEncodeUUID(staticUUID)
-				decoded, err := DecodeUUID(encoded)
-				if err != nil {
-					t.Errorf("Failed to decode short UUID: %v", err)
-				}
-				if decoded != staticUUID {
-					t.Errorf("Short encode/decode mismatch: got %v, want %v", decoded, staticUUID)
-				}
-			},
-		},
-		{
-			name: "Test Long Encoding and Decoding",
-			testFunc: func(t *testing.T) {
-				encoded := LongEncodeUUID(staticUUID)
-				decoded, err := DecodeUUID(encoded)
-				if err != nil {
-					t.Errorf("Failed to decode long UUID: %v", err)
-				}
-				if decoded != staticUUID {
-					t.Errorf("Long encode/decode mismatch: got %v, want %v", decoded, staticUUID)
-				}
-			},
-		},
-		{
-			name: "Test Default Encoding",
-			testFunc: func(t *testing.T) {
-				encoded := EncodeUUID(staticUUID)
-				decoded, err := DecodeUUID(encoded)
-				if err != nil {
-					t.Errorf("Failed to decode default encoded UUID: %v", err)
-				}
-				if decoded != staticUUID {
-					t.Errorf("Default encode/decode mismatch: got %v, want %v", decoded, staticUUID)
-				}
-			},
-		},
-	}
+	// Create our base UUID
+	baseUUID := uuidv7.Must(uuidv7.FromString(expectedUUID))
 
-	for _, tt := range tests {
-		t.Run(tt.name, tt.testFunc)
-	}
+	// Test cases for all possible transformations
+	t.Run("UUID to Short Encoding", func(t *testing.T) {
+		shortEncoded := ShortEncodeUUID(baseUUID)
+		if shortEncoded != expectedShortEncoding {
+			t.Errorf("ShortEncodeUUID() = %v, want %v", shortEncoded, expectedShortEncoding)
+		}
+	})
+
+	t.Run("UUID to Long Encoding", func(t *testing.T) {
+		longEncoded := LongEncodeUUID(baseUUID)
+		if longEncoded != expectedLongEncoding {
+			t.Errorf("LongEncodeUUID() = %v, want %v", longEncoded, expectedLongEncoding)
+		}
+	})
+
+	t.Run("Short Encoding to UUID", func(t *testing.T) {
+		decoded, err := DecodeUUID(expectedShortEncoding)
+		if err != nil {
+			t.Errorf("DecodeUUID(short) failed: %v", err)
+		}
+		if decoded != baseUUID {
+			t.Errorf("DecodeUUID(short) = %v, want %v", decoded, baseUUID)
+		}
+	})
+
+	t.Run("Long Encoding to UUID", func(t *testing.T) {
+		decoded, err := DecodeUUID(expectedLongEncoding)
+		if err != nil {
+			t.Errorf("DecodeUUID(long) failed: %v", err)
+		}
+		if decoded != baseUUID {
+			t.Errorf("DecodeUUID(long) = %v, want %v", decoded, baseUUID)
+		}
+	})
+
+	t.Run("Default Encode matches Short Encode", func(t *testing.T) {
+		encoded := EncodeUUID(baseUUID)
+		if encoded != expectedShortEncoding {
+			t.Errorf("EncodeUUID() = %v, want %v", encoded, expectedShortEncoding)
+		}
+	})
+
+	// Test round-trip transformations
+	t.Run("Short Encoding Round Trip", func(t *testing.T) {
+		// Short -> UUID -> Short
+		decoded, err := DecodeUUID(expectedShortEncoding)
+		if err != nil {
+			t.Errorf("DecodeUUID(short) failed: %v", err)
+		}
+		reencoded := ShortEncodeUUID(decoded)
+		if reencoded != expectedShortEncoding {
+			t.Errorf("Short round-trip failed: got %v, want %v", reencoded, expectedShortEncoding)
+		}
+	})
+
+	t.Run("Long Encoding Round Trip", func(t *testing.T) {
+		// Long -> UUID -> Long
+		decoded, err := DecodeUUID(expectedLongEncoding)
+		if err != nil {
+			t.Errorf("DecodeUUID(long) failed: %v", err)
+		}
+		reencoded := LongEncodeUUID(decoded)
+		if reencoded != expectedLongEncoding {
+			t.Errorf("Long round-trip failed: got %v, want %v", reencoded, expectedLongEncoding)
+		}
+	})
 }
 
 func TestDecodeUUIDErrors(t *testing.T) {
@@ -90,7 +113,7 @@ func TestDecodeUUIDErrors(t *testing.T) {
 		},
 		{
 			name:    "Invalid UUID string length",
-			input:   "0192d9f7-edc6-76d8-8aae-c9b5b0237c0", // Missing last character
+			input:   "0192d9fd-d725-765d-8305-a5cdcd3ffe", // Missing last characters
 			wantErr: true,
 		},
 	}
@@ -102,30 +125,5 @@ func TestDecodeUUIDErrors(t *testing.T) {
 				t.Errorf("DecodeUUID() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
-	}
-}
-
-func TestUUIDRoundTrip(t *testing.T) {
-	// Generate a new UUID and test full round-trip
-	original := NewUUID()
-	
-	// Test short encoding round-trip
-	shortEncoded := ShortEncodeUUID(original)
-	shortDecoded, err := DecodeUUID(shortEncoded)
-	if err != nil {
-		t.Errorf("Failed to decode short encoded UUID: %v", err)
-	}
-	if shortDecoded != original {
-		t.Errorf("Short encoding round-trip failed: got %v, want %v", shortDecoded, original)
-	}
-
-	// Test long encoding round-trip
-	longEncoded := LongEncodeUUID(original)
-	longDecoded, err := DecodeUUID(longEncoded)
-	if err != nil {
-		t.Errorf("Failed to decode long encoded UUID: %v", err)
-	}
-	if longDecoded != original {
-		t.Errorf("Long encoding round-trip failed: got %v, want %v", longDecoded, original)
 	}
 }
