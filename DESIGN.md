@@ -4,7 +4,7 @@ goal: simple application for some tasks to aid me in my time and management
 
 ## pitch
 
-This tool is supposed to help me with my time management. It is based on the ideas of Getting Things Done and timeboxing. You can select one activity you are currently doing and
+This tool is supposed to help me with my time management. It is based on the ideas of Getting Things Done and timeboxing. You can select one todo as your current activity and it will track the time spend on it.
 
 ## planned features
 
