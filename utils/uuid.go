@@ -11,13 +11,30 @@ func NewUUID() (uid uuidv7.UUID) {
 	return uuidv7.Must(uuidv7.NewV7())
 }
 
+// Base64 alphabet shifted to start with 't' after base64url padding is removed
+// Standard:  ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_
+// Modified:  tuvwxyz0123456789-_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrs
+var customEncoding = base64.NewEncoding(
+	"tuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqr+-#",
+).WithPadding(base64.NoPadding)
+
+// Global replacers to avoid recreating them on every encode/decode
+var (
+	encodeReplacer = strings.NewReplacer( //qrs
+		"+", "sp",
+		"-", "sq",
+		"#", "sr",
+	)
+	decodeReplacer = strings.NewReplacer(
+		"sp", "+", 
+		"sq", "-", 
+		"sr", "#", 
+	)
+)
+
 func ShortEncodeUUID(uid uuidv7.UUID) string {
-	encoded := base64.RawURLEncoding.EncodeToString(uid.Bytes())
-	return strings.NewReplacer(
-		"-", "98",
-		"_", "90",
-		"9", "99",
-	).Replace(encoded)
+	encoded := customEncoding.EncodeToString(uid.Bytes())
+	return encodeReplacer.Replace(encoded)
 }
 
 func LongEncodeUUID(uid uuidv7.UUID) string {
@@ -41,14 +58,9 @@ func DecodeUUID(encid string) (uuidv7.UUID, error) {
 		return u, nil
 	}
 
-	// Reverse the character replacements
-	decoded := strings.NewReplacer(
-		"98", "-",
-		"90", "_",
-		"99", "9",
-	).Replace(encid)
+	decoded := decodeReplacer.Replace(encid)
 
-	b, err := base64.RawURLEncoding.DecodeString(decoded)
+	b, err := customEncoding.DecodeString(decoded)
 	if err != nil {
 		return uuidv7.Nil, fmt.Errorf("failed to decode base64: %w", err)
 	}
