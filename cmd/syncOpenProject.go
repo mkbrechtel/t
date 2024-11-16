@@ -83,3 +83,18 @@ var syncOpenProjectCmd = &cobra.Command{
         fmt.Printf("  Skipped: %d tasks (no changes needed)\n", result.Skipped)
     },
 }
+
+func init() {
+    syncCmd.AddCommand(syncOpenProjectCmd)
+
+    syncOpenProjectCmd.PersistentFlags().String("url", "", "OpenProject URL")
+    syncOpenProjectCmd.PersistentFlags().String("api-key", "", "OpenProject API Key")
+    syncOpenProjectCmd.PersistentFlags().String("query-id", "", "OpenProject Query ID")
+    syncOpenProjectCmd.PersistentFlags().String("todo-prefix", "", "Prefix for OpenProject todos created by t")
+
+    viper.BindPFlag("sync.openproject.url", syncOpenProjectCmd.PersistentFlags().Lookup("url"))
+    viper.BindPFlag("sync.openproject.api-key", syncOpenProjectCmd.PersistentFlags().Lookup("api-key"))
+    viper.BindPFlag("sync.openproject.query-id", syncOpenProjectCmd.PersistentFlags().Lookup("query-id"))
+    viper.BindPFlag("sync.openproject.todo-prefix", syncOpenProjectCmd.PersistentFlags().Lookup("todo-prefix"))
+
+}
