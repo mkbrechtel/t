@@ -4,6 +4,7 @@ import (
 	"time"
 	todo "github.com/1set/todotxt"
 	"t/utils"
+	uuidv7 "github.com/gofrs/uuid/v5"
 )
 
 // TaskEnsureConfig holds configuration options for ensuring task properties
@@ -28,10 +29,14 @@ var DefaultEnsureConfig = TaskEnsureConfig{
 
 // EnsureTaskProperties ensures a single task has all required properties according to the config
 func EnsureTaskProperties(task *todo.Task, config TaskEnsureConfig) {
-	ensureCreationDate(task, config)
-	ensureCompletionDate(task, config)
-	ensureIdentifier(task, config)
-	ensureDefaultTags(task, config)
+	if config.EnforceCreationDate {
+		ensureCreationDate(task)
+	}
+	if config.EnforceCompletionDate && task.IsCompleted() && !task.HasCompletedDate() {
+		ensureCompletionDate(task)
+	}
+	ensureIdentifier(task, config.PreferShortIDs)
+	ensureTags(task, config.DefaultTags)
 }
 
 // EnsureTaskListProperties applies property assurance to all tasks in a list
@@ -43,21 +48,19 @@ func EnsureTaskListProperties(taskList todo.TaskList, config TaskEnsureConfig) t
 }
 
 // ensureCreationDate ensures tasks have a creation date
-func ensureCreationDate(task *todo.Task, config TaskEnsureConfig) {
-	if config.EnforceCreationDate && !task.HasCreatedDate() {
+func ensureCreationDate(task *todo.Task) {
+	if !task.HasCreatedDate() {
 		task.CreatedDate = time.Now()
 	}
 }
 
 // ensureCompletionDate ensures completed tasks have a completion date
-func ensureCompletionDate(task *todo.Task, config TaskEnsureConfig) {
-	if config.EnforceCompletionDate && task.IsCompleted() && !task.HasCompletedDate() {
-		task.CompletedDate = time.Now()
-	}
+func ensureCompletionDate(task *todo.Task) {
+	task.CompletedDate = time.Now()
 }
 
-// ensureIdentifier ensures tasks have either a short-form ID or UUID
-func ensureIdentifier(task *todo.Task, config TaskEnsureConfig) {
+// ensureIdentifier ensures tasks have either a short-form ID or UUID and returns the UUID
+func ensureIdentifier(task *todo.Task, preferShortIDs bool) (uuidv7.UUID) {
 	if task.AdditionalTags == nil {
 		task.AdditionalTags = make(map[string]string)
 	}
@@ -79,22 +82,24 @@ func ensureIdentifier(task *todo.Task, config TaskEnsureConfig) {
 	}
 
 	// Set the ID in preferred format
-	if config.PreferShortIDs {
+	if preferShortIDs {
 		task.AdditionalTags["id"] = utils.ShortEncodeUUID(id)
 		delete(task.AdditionalTags, "uuid")
 	} else {
 		task.AdditionalTags["uuid"] = utils.LongEncodeUUID(id)
 		delete(task.AdditionalTags, "id")
 	}
+
+	return id
 }
 
 // ensureDefaultTags ensures all default tags are present
-func ensureDefaultTags(task *todo.Task, config TaskEnsureConfig) {
+func ensureTags(task *todo.Task, tags map[string]string) {
 	if task.AdditionalTags == nil {
 		task.AdditionalTags = make(map[string]string)
 	}
 	
-	for key, value := range config.DefaultTags {
+	for key, value := range tags {
 		if _, exists := task.AdditionalTags[key]; !exists {
 			task.AdditionalTags[key] = value
 		}
