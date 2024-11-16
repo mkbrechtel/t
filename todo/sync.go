@@ -85,13 +85,13 @@ func updateTaskContent(existing, source *todo.Task) {
     existing.Projects = source.Projects
     existing.Contexts = source.Contexts
     
-    // Update additional tags while preserving uuid
-    uuid := existing.AdditionalTags["uuid"]
+    // Update additional tags
+    //uuid := existing.AdditionalTags["uuid"]
     existing.AdditionalTags = make(map[string]string)
     for k, v := range source.AdditionalTags {
         existing.AdditionalTags[k] = v
     }
-    existing.AdditionalTags["uuid"] = uuid
+    //existing.AdditionalTags["uuid"] = uuid
     
     // Restore completion status
     existing.Completed = wasCompleted
