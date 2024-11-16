@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"time"
+	"strings"
 
 	todo "github.com/1set/todotxt"
 )
@@ -65,7 +66,7 @@ func PrintIssues(issues []Issue) {
 }
 
 // CreateTaskList creates a todo.TaskList from GitHub issues
-func CreateTaskList(issues []Issue, prefix string) todo.TaskList {
+func CreateTaskList(issues []Issue, issuePrefix, pullPrefix string) todo.TaskList {
 	tl := todo.NewTaskList()
 
 	for _, issue := range issues {
@@ -73,6 +74,12 @@ func CreateTaskList(issues []Issue, prefix string) todo.TaskList {
 
 		if task.AdditionalTags == nil {
 			task.AdditionalTags = make(map[string]string)
+		}
+
+		// Determine the appropriate prefix based on the issue type
+		prefix := issuePrefix
+		if isPullRequest(issue) {
+			prefix = pullPrefix
 		}
 
 		task.Todo = prefix + issue.Title
@@ -89,4 +96,11 @@ func CreateTaskList(issues []Issue, prefix string) todo.TaskList {
 	}
 
 	return tl
+}
+
+// isPullRequest checks if the issue is actually a pull request
+func isPullRequest(issue Issue) bool {
+	// You may need to adjust this logic based on how GitHub distinguishes
+	// between issues and pull requests in the API response
+	return issue.HTMLURL != "" && strings.Contains(issue.HTMLURL, "/pull/")
 }

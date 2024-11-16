@@ -35,15 +35,15 @@ var syncGithubCmd = &cobra.Command{
             os.Exit(1)
         }
 
-        // Get GitHub API enpoint
-        //    viper.BindPFlag("sync.github.api_endpoint", syncGithubCmd.PersistentFlags().Lookup("api-endpoint"))
+        // Get GitHub API endpoint
         endpoint := viper.GetString("sync.github.api_endpoint")
         if endpoint == "" {
             fmt.Println("Error: GitHub API endpoint is not configured")
             os.Exit(1)
         }
 
-        prefix := viper.GetString("sync.github.todo-prefix")
+        issuePrefix := viper.GetString("sync.github.issue_prefix")
+        pullPrefix := viper.GetString("sync.github.pull_prefix")
         
         // Fetch issues from GitHub
         fmt.Println("Fetching issues from GitHub...")
@@ -53,11 +53,9 @@ var syncGithubCmd = &cobra.Command{
             os.Exit(1)
         }
 
-        // github.PrintIssues(issues)
-
         // Convert GitHub issues to todo list
         fmt.Println("Converting GitHub issues to tasks...")
-        sourceList := github.CreateTaskList(issues, prefix)
+        sourceList := github.CreateTaskList(issues, issuePrefix, pullPrefix)
 
         fmt.Print(sourceList)
 
@@ -96,12 +94,14 @@ func init() {
     syncCmd.AddCommand(syncGithubCmd)
 
     syncGithubCmd.PersistentFlags().String("token", "", "GitHub access token")
-    syncGithubCmd.PersistentFlags().String("todo-prefix", "Github issue: ", "Prefix for GitHub todos created by t")
+    syncGithubCmd.PersistentFlags().String("issue-prefix", "GitHub Issue: ", "Prefix for GitHub issue todos created by t")
+    syncGithubCmd.PersistentFlags().String("pull-prefix", "GitHub PR: ", "Prefix for GitHub pull request todos created by t")
     syncGithubCmd.PersistentFlags().String("api-base-url", "https://api.github.com", "GitHub API base URL")
-    syncGithubCmd.PersistentFlags().String("api-endpoint", "/issues?filter=assigned&state=all&per_page=1000&pulls=true", "GitHub API endpoint")
+    syncGithubCmd.PersistentFlags().String("api-endpoint", "/issues?filter=assigned&state=all&per_page=1000&pulls=1", "GitHub API endpoint")
 
     viper.BindPFlag("sync.github.token", syncGithubCmd.PersistentFlags().Lookup("token"))
-    viper.BindPFlag("sync.github.todo-prefix", syncGithubCmd.PersistentFlags().Lookup("todo-prefix"))
+    viper.BindPFlag("sync.github.issue_prefix", syncGithubCmd.PersistentFlags().Lookup("issue-prefix"))
+    viper.BindPFlag("sync.github.pull_prefix", syncGithubCmd.PersistentFlags().Lookup("pull-prefix"))
     viper.BindPFlag("sync.github.api_base_url", syncGithubCmd.PersistentFlags().Lookup("api-base-url"))
     viper.BindPFlag("sync.github.api_endpoint", syncGithubCmd.PersistentFlags().Lookup("api-endpoint"))
 }
