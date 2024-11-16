@@ -18,7 +18,12 @@ type LogEntry struct {
 
 // encoder function to encode in one line
 func (l *LogEntry) Encode() string {
-	return l.Id.String() + " " + l.Type + " " + l.Date.Format(time.RFC3339) + " " + l.Hostname + " " + l.Source + " " + l.Content
+	return l.Id.String() + " " + 
+		l.Type + " " + 
+		l.Date.Format(time.RFC3339) + " " + 
+		l.Hostname + " " + 
+		l.Source + " " + 
+		l.Content
 }
 
 // decoder function to decode from one line
