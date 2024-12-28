@@ -1,6 +1,6 @@
 package main
 
-import "t/cmd"
+import "t.mkbrechtel.dev/cmd"
 
 func main() {
 	cmd.Execute()
