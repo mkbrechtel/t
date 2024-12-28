@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"t/todo"
+	"t.mkbrechtel.dev/t/todo"
 )
 
 // todoCmd represents the todo command

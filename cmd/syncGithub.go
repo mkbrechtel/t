@@ -5,8 +5,8 @@ import (
     "os"
     "github.com/spf13/cobra"
     "github.com/spf13/viper"
-    "t/sync/github"
-    "t/todo"
+    "t.mkbrechtel.dev/t/sync/github"
+    "t.mkbrechtel.dev/t/todo"
     todotxt "github.com/1set/todotxt"
 )
 
