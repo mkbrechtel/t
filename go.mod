@@ -1,4 +1,4 @@
-module t
+module t5.mkbrechtel.dev
 
 go 1.19
 
