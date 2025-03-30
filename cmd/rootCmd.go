@@ -9,15 +9,15 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "t",
-	Short: "t is a todo and time tracker",
-	Long: `t is a todo and time tracker
+	Use:   "t5",
+	Short: "t5 is a todo and time tracker",
+	Long: `t5 is a todo and time tracker
 
 	manage your todo list with
-		t todo
+		t5 todo
 
 	track your time with
-		t time
+		t5 time
 `,
 }
 

@@ -10,7 +10,7 @@ _WIP_
 
 ```
 go mod download
-go build
+go build -o t5
 ```
 
-run `./t`
+run `./t5`

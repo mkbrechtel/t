@@ -4,8 +4,8 @@ RUN apt-get update && apt-get install -y golang ca-certificates && apt-get clean
 
 WORKDIR /opt/t5
 
-#COPY go.mod go.sum ./
-#RUN go mod download
+COPY go.mod go.sum ./
+RUN go mod download
 
 
 FROM env as devenv
@@ -15,5 +15,5 @@ RUN apt-get update && apt-get install -y nodejs npm fish git
 RUN npm install -g @anthropic-ai/claude-code
 
 
-#FROM env as build
+#FROM env as buil
 
