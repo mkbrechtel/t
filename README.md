@@ -1,6 +1,6 @@
 # t5
 
-t5 is a todo list manager and time tracker that helps you with [timeboxing](https://en.wikipedia.org/wiki/Timeboxing).
+**t5**; the **t**ask manager, **t**odo list, **t**ime tracker and [**t**imeboxing](https://en.wikipedia.org/wiki/Timeboxing) **t**ool
 
 It uses the [todo.txt](http://todotxt.org/) format for your todo list.
 
