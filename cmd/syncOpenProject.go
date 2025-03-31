@@ -6,7 +6,7 @@ import (
     "github.com/spf13/cobra"
     "github.com/spf13/viper"
     "t5.mkbrechtel.dev/sync/openproject"
-    "t5.mkbrechtel.dev/todo"
+    todo "t5.mkbrechtel.dev/sync/todotxt"
     todotxt "github.com/1set/todotxt"
 )
 
