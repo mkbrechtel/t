@@ -1,4 +1,4 @@
-package model
+package core
 
 import (
 	"time"
@@ -9,7 +9,5 @@ import (
 type Project struct {
 	ID          uuid.UUID
 	Name        string
-	Description string
-	Tasks       []Task
 	Budget      time.Duration
 }

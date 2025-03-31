@@ -1,13 +1,11 @@
-package repo
+package core
 
 import (
 	"time"
-
-	"t5.mkbrechtel.dev/model"
 )
 
 type TaskFilter interface {
-	FilterTask(model.Task) bool
+	FilterTask(Task) bool
 }
 
 // ProjectFilter filters tasks that have specific projects
@@ -15,7 +13,7 @@ type ProjectFilter struct {
 	Projects []string
 }
 
-func (f ProjectFilter) FilterTask(task model.Task) bool {
+func (f ProjectFilter) FilterTask(task Task) bool {
 	if len(f.Projects) == 0 {
 		return true
 	}
@@ -34,7 +32,7 @@ type ContextFilter struct {
 	Contexts []string
 }
 
-func (f ContextFilter) FilterTask(task model.Task) bool {
+func (f ContextFilter) FilterTask(task Task) bool {
 	if len(f.Contexts) == 0 {
 		return true
 	}
@@ -53,7 +51,7 @@ type CompletionFilter struct {
 	Completed *bool
 }
 
-func (f CompletionFilter) FilterTask(task model.Task) bool {
+func (f CompletionFilter) FilterTask(task Task) bool {
 	if f.Completed == nil {
 		return true
 	}
@@ -65,7 +63,7 @@ type PriorityFilter struct {
 	Priority string
 }
 
-func (f PriorityFilter) FilterTask(task model.Task) bool {
+func (f PriorityFilter) FilterTask(task Task) bool {
 	if f.Priority == "" {
 		return true
 	}

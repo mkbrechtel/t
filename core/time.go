@@ -1,26 +1,10 @@
-package model
+package core
 
 import (
 	"time"
 
 	uuid "github.com/gofrs/uuid/v5"
 )
-
-type TaskUpdate struct {
-	ID             uuid.UUID
-	Original       string
-	Todo           string
-	Priority       string
-	Projects       []string
-	Contexts       []string
-	AdditionalTags map[string]string
-	CreatedDate    time.Time
-	DueDate        time.Time
-	CompletedDate  time.Time
-	Completed      bool
-	UsedTime       time.Duration
-	Source         string
-}
 
 type TaskStartTime struct {
 	ID        uuid.UUID

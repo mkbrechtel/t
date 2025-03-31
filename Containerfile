@@ -2,6 +2,8 @@ FROM debian:trixie as env
 
 RUN apt-get update && apt-get install -y golang ca-certificates && apt-get clean
 
+ENV GOPATH=/opt/go
+
 WORKDIR /opt/t5
 
 COPY go.mod go.sum ./
