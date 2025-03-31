@@ -5,13 +5,10 @@ name: Go
 
 on:
   push:
-    branches:
-      - main
-      - ci
+    branches: ['**']
   pull_request:
     branches:
       - main
-      - ci
 
 jobs:
 
