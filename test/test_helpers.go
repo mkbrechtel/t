@@ -122,7 +122,7 @@ func runT5Command(t *testing.T, args ...string) (string, string, error) {
 	fullArgs := append([]string{"t5"}, args...)
 	
 	// Execute the command with our captured output
-	err := cmd.ExecuteWithArgs(fullArgs, stdout, stderr)
+	err := cmd.Execute(fullArgs, stdout, stderr)
 	
 	// Wait a moment to ensure file operations complete
 	// This helps with event store file creation and visibility

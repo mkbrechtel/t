@@ -9,7 +9,37 @@ import (
 )
 
 // Execute parses flags and runs the appropriate command with the given args
-func Execute(args []string) error {
+// If stdout and stderr are nil, os.Stdout and os.Stderr will be used
+func Execute(args []string, stdout, stderr io.Writer) error {
+	// If no writers are provided, use standard output and error
+	if stdout == nil {
+		stdout = os.Stdout
+	}
+	if stderr == nil {
+		stderr = os.Stderr
+	}
+
+	// Save original stdout and stderr
+	oldStdout, oldStderr := os.Stdout, os.Stderr
+	
+	// Create pipes for redirecting output
+	rOut, wOut, _ := os.Pipe()
+	rErr, wErr, _ := os.Pipe()
+	
+	// Replace stdout and stderr
+	os.Stdout = wOut
+	os.Stderr = wErr
+	
+	// Restore original stdout and stderr when done
+	defer func() {
+		os.Stdout = oldStdout
+		os.Stderr = oldStderr
+	}()
+	
+	// Start copying to provided writers
+	go io.Copy(stdout, rOut)
+	go io.Copy(stderr, rErr)
+
 	ctx := NewAppContext()
 	
 	// Setup custom flag set for parsing the given args
@@ -21,14 +51,14 @@ func Execute(args []string) error {
 
 	// Set custom usage function
 	fs.Usage = func() {
-		fmt.Fprintf(os.Stderr, "Usage: t5 [flags] <command> [arguments]\n\n")
-		fmt.Fprintf(os.Stderr, "t5 is a todo list and time tracker tool\n\n")
-		fmt.Fprintf(os.Stderr, "Commands:\n")
-		fmt.Fprintf(os.Stderr, "  list                List tasks from the event store\n")
-		fmt.Fprintf(os.Stderr, "  update [file]       Update and ensure properties of tasks in your todo list\n")
-		fmt.Fprintf(os.Stderr, "  sync [file]         Sync tasks with a todo.txt file\n")
-		fmt.Fprintf(os.Stderr, "  config              Show the current configuration\n")
-		fmt.Fprintf(os.Stderr, "\nFlags:\n")
+		fmt.Fprintf(stderr, "Usage: t5 [flags] <command> [arguments]\n\n")
+		fmt.Fprintf(stderr, "t5 is a todo list and time tracker tool\n\n")
+		fmt.Fprintf(stderr, "Commands:\n")
+		fmt.Fprintf(stderr, "  list                List tasks from the event store\n")
+		fmt.Fprintf(stderr, "  update [file]       Update and ensure properties of tasks in your todo list\n")
+		fmt.Fprintf(stderr, "  sync [file]         Sync tasks with a todo.txt file\n")
+		fmt.Fprintf(stderr, "  config              Show the current configuration\n")
+		fmt.Fprintf(stderr, "\nFlags:\n")
 		fs.PrintDefaults()
 	}
 
@@ -79,7 +109,7 @@ func Execute(args []string) error {
 				}
 				UpdateTasks(ctx)
 			default:
-				fmt.Fprintf(os.Stderr, "Unknown todo subcommand: %s\n", subCommand)
+				fmt.Fprintf(stderr, "Unknown todo subcommand: %s\n", subCommand)
 				fs.Usage()
 				return fmt.Errorf("unknown todo subcommand: %s", subCommand)
 			}
@@ -96,45 +126,16 @@ func Execute(args []string) error {
 	case "config":
 		ctx.ShowConfig()
 	default:
-		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", command)
+		fmt.Fprintf(stderr, "Unknown command: %s\n", command)
 		fs.Usage()
 		return fmt.Errorf("unknown command: %s", command)
 	}
 
-	return nil
-}
-
-// ExecuteWithArgs is a convenience wrapper that allows setting both arguments and output streams
-func ExecuteWithArgs(args []string, stdout, stderr io.Writer) error {
-	// Save original stdout and stderr
-	oldStdout, oldStderr := os.Stdout, os.Stderr
-	
-	// Create pipes for redirecting output
-	rOut, wOut, _ := os.Pipe()
-	rErr, wErr, _ := os.Pipe()
-	
-	// Replace stdout and stderr
-	os.Stdout = wOut
-	os.Stderr = wErr
-	
-	// Restore original stdout and stderr when done
-	defer func() {
-		os.Stdout = oldStdout
-		os.Stderr = oldStderr
-	}()
-	
-	// Start copying to provided writers
-	go io.Copy(stdout, rOut)
-	go io.Copy(stderr, rErr)
-	
-	// Execute the command
-	err := Execute(args)
-	
 	// Close the write ends of the pipes to flush output
 	wOut.Close()
 	wErr.Close()
 	
-	return err
+	return nil
 }
 
 // GetAppContextForTesting returns a new app context for testing
