@@ -14,3 +14,9 @@ go build -o t5
 ```
 
 run `./t5`
+
+## Tests
+
+```
+go test -v ./...
+```
