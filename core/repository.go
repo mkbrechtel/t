@@ -10,18 +10,18 @@ import (
 	"github.com/gofrs/uuid/v5"
 )
 
-// Repository is an in-memory implementation of event storage and state management
+// Repository is an implementation of event storage and state management
 type Repository struct {
-	events []Event
+	EventStore
 	state  *AppState
 	mu     sync.RWMutex
 }
 
-// NewRepository creates a new empty repository
+// NewRepository creates a new empty repository with an in-memory event store
 func NewRepository() *Repository {
 	return &Repository{
-		events: []Event{},
-		state:  NewAppState(),
+		EventStore: NewInMemoryEventStore(),
+		state:      NewAppState(),
 	}
 }
 
@@ -35,20 +35,15 @@ func (r *Repository) SaveEvent(event Event) error {
 		return err
 	}
 
-	// Store the event
-	r.events = append(r.events, event)
-	return nil
+	// Store the event using the EventStore interface
+	return r.EventStore.SaveEvent(event)
 }
 
 // GetEvents retrieves all events from storage
+// This method is implemented to provide backward compatibility
+// and simple access to the underlying EventStore
 func (r *Repository) GetEvents() ([]Event, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	// Return a copy of the events slice to prevent modification
-	eventsCopy := make([]Event, len(r.events))
-	copy(eventsCopy, r.events)
-	return eventsCopy, nil
+	return r.EventStore.GetEvents()
 }
 
 // RecordTodoTxtTaskUpdate stores a todo.txt task update event
@@ -80,16 +75,22 @@ func (r *Repository) RebuildState() error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	
+	// Get all events from the store
+	events, err := r.EventStore.GetEvents()
+	if err != nil {
+		return fmt.Errorf("failed to retrieve events: %w", err)
+	}
+	
 	// Create a new empty state
 	newState := NewAppState()
 	
 	// Sort events by timestamp
-	sort.Slice(r.events, func(i, j int) bool {
-		return r.events[i].GetTimestamp().Before(r.events[j].GetTimestamp())
+	sort.Slice(events, func(i, j int) bool {
+		return events[i].GetTimestamp().Before(events[j].GetTimestamp())
 	})
 	
 	// Apply all events in order
-	for _, event := range r.events {
+	for _, event := range events {
 		if err := event.apply(newState); err != nil {
 			return fmt.Errorf("failed to apply event %s: %w", event.GetType(), err)
 		}

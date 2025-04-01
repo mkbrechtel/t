@@ -12,9 +12,55 @@ func TestNewRepository(t *testing.T) {
 	repo := NewRepository()
 	assert.NotNil(t, repo)
 	assert.NotNil(t, repo.state)
-	assert.Equal(t, 0, len(repo.events))
+	assert.NotNil(t, repo.EventStore)
+	
+	events, err := repo.GetEvents()
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(events))
 	assert.Equal(t, 0, len(repo.state.Tasks))
 	assert.Equal(t, 0, len(repo.state.Projects))
+}
+
+func TestInMemoryEventStore(t *testing.T) {
+	store := NewInMemoryEventStore()
+	
+	// Check initial state
+	events, err := store.GetEvents()
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(events))
+	
+	// Save an event
+	event1 := NewTodoTxtTaskUpdate("Task 1 +project1")
+	err = store.SaveEvent(event1)
+	assert.NoError(t, err)
+	
+	// Check that the event was stored
+	events, err = store.GetEvents()
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(events))
+	assert.Equal(t, event1, events[0])
+	
+	// Save another event
+	event2 := NewTodoTxtTaskUpdate("Task 2 +project2")
+	err = store.SaveEvent(event2)
+	assert.NoError(t, err)
+	
+	// Check that both events were stored
+	events, err = store.GetEvents()
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(events))
+	
+	// Verify the events are returned in the order they were added
+	assert.Equal(t, event1, events[0])
+	assert.Equal(t, event2, events[1])
+	
+	// Verify that modifying the returned slice doesn't affect the store
+	events = append(events, NewTodoTxtTaskUpdate("Task 3"))
+	assert.Equal(t, 3, len(events))
+	
+	eventsAfter, err := store.GetEvents()
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(eventsAfter))
 }
 
 func TestRepository_SaveEvent(t *testing.T) {
@@ -25,7 +71,9 @@ func TestRepository_SaveEvent(t *testing.T) {
 	assert.NoError(t, err)
 	
 	// Verify the event was stored
-	assert.Equal(t, 1, len(repo.events))
+	events, err := repo.GetEvents()
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(events))
 	
 	// Verify the state was updated
 	assert.Equal(t, 1, len(repo.state.Tasks))
@@ -54,11 +102,20 @@ func TestRepository_GetEvents(t *testing.T) {
 	// Verify that modifying the returned slice doesn't affect the repository
 	events = append(events, NewTodoTxtTaskUpdate("Task 3"))
 	assert.Equal(t, 3, len(events))
-	assert.Equal(t, 2, len(repo.events))
+	
+	// Check events again from repository
+	eventsAfter, err := repo.GetEvents()
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(eventsAfter))
 }
 
 func TestRepository_RebuildState(t *testing.T) {
-	repo := NewRepository()
+	// Create a repository with a custom InMemoryEventStore for direct manipulation
+	eventStore := NewInMemoryEventStore()
+	repo := &Repository{
+		EventStore: eventStore,
+		state:      NewAppState(),
+	}
 	
 	// Add events with timestamps out of order
 	mockTime3 := time.Date(2023, 7, 15, 12, 0, 0, 0, time.UTC)
@@ -73,8 +130,8 @@ func TestRepository_RebuildState(t *testing.T) {
 	now = func() time.Time { return mockTime2 }
 	event2 := NewTodoTxtTaskUpdate("Task 2 +project2")
 	
-	// Add events in wrong order (3, 1, 2)
-	repo.events = append(repo.events, event3, event1, event2)
+	// Add events in wrong order (3, 1, 2) directly to the event store
+	eventStore.events = append(eventStore.events, event3, event1, event2)
 	
 	// Rebuild state
 	err := repo.RebuildState()
