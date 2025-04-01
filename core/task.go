@@ -24,8 +24,48 @@ type Task struct {
 	Source         string
 }
 
+// ToTodoTxt converts a Task to todo.txt format
+func (t Task) ToTodoTxt() string {
+	// Ensure the UUID is stored in AdditionalTags
+	if t.AdditionalTags == nil {
+		t.AdditionalTags = make(map[string]string)
+	}
+	t.AdditionalTags["uuid"] = t.ID.String()
+	
+	// Create a todo.txt task
+	todoTask := todo.Task{
+		Todo:           t.Todo,
+		Priority:       t.Priority,
+		Projects:       t.Projects,
+		Contexts:       t.Contexts,
+		AdditionalTags: t.AdditionalTags,
+		Completed:      t.Completed,
+	}
+	
+	// Set dates if they are not zero
+	if !t.CreatedDate.IsZero() {
+		todoTask.CreatedDate = t.CreatedDate
+	}
+	if !t.DueDate.IsZero() {
+		todoTask.DueDate = t.DueDate
+	}
+	if !t.CompletedDate.IsZero() {
+		todoTask.CompletedDate = t.CompletedDate
+	}
+	
+	// Generate string representation
+	return todoTask.String()
+}
+
+// TodoTxtTaskUpdate represents an event for updating tasks from todo.txt format
 type TodoTxtTaskUpdate struct {
+	BaseEvent
 	Lines string
+}
+
+// GetType returns the type of the event
+func (e *TodoTxtTaskUpdate) GetType() string {
+	return "TodoTxtTaskUpdate"
 }
 
 func (e *TodoTxtTaskUpdate) apply(state *AppState) error {
