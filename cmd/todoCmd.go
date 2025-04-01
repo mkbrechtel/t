@@ -68,7 +68,7 @@ var todoUpdateCmd = &cobra.Command{
 			log.Fatalf("Failed to get todo file content: %v", err)
 		}
 
-		event := core.NewTodoTxtTaskUpdate(content)
+		event := core.NewTodoTxtTaskUpdate(content, todoFile)
 		err = repo.SaveEvent(event)
 		if err != nil {
 			log.Fatalf("Failed to save event: %v", err)

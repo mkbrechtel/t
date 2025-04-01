@@ -67,9 +67,10 @@ func ApplyEvent(state *AppState, event Event) error {
 }
 
 // NewTodoTxtTaskUpdate creates a new TodoTxtTaskUpdate event with current timestamp
-func NewTodoTxtTaskUpdate(lines string) *TodoTxtTaskUpdate {
+func NewTodoTxtTaskUpdate(lines string, source string) *TodoTxtTaskUpdate {
 	event := &TodoTxtTaskUpdate{
 		Lines: lines,
+		Source: source,
 	}
 	event.Timestamp = now()
 	return event

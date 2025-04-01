@@ -30,7 +30,7 @@ func TestInMemoryEventStore(t *testing.T) {
 	assert.Equal(t, 0, len(events))
 	
 	// Save an event
-	event1 := NewTodoTxtTaskUpdate("Task 1 +project1")
+	event1 := NewTodoTxtTaskUpdate("Task 1 +project1", "test")
 	err = store.SaveEvent(event1)
 	assert.NoError(t, err)
 	
@@ -41,7 +41,7 @@ func TestInMemoryEventStore(t *testing.T) {
 	assert.Equal(t, event1, events[0])
 	
 	// Save another event
-	event2 := NewTodoTxtTaskUpdate("Task 2 +project2")
+	event2 := NewTodoTxtTaskUpdate("Task 2 +project2", "test")
 	err = store.SaveEvent(event2)
 	assert.NoError(t, err)
 	
@@ -55,7 +55,7 @@ func TestInMemoryEventStore(t *testing.T) {
 	assert.Equal(t, event2, events[1])
 	
 	// Verify that modifying the returned slice doesn't affect the store
-	events = append(events, NewTodoTxtTaskUpdate("Task 3"))
+	events = append(events, NewTodoTxtTaskUpdate("Task 3", "test"))
 	assert.Equal(t, 3, len(events))
 	
 	eventsAfter, err := store.GetEvents()
@@ -66,7 +66,7 @@ func TestInMemoryEventStore(t *testing.T) {
 func TestRepository_SaveEvent(t *testing.T) {
 	repo := NewRepository()
 	
-	event := NewTodoTxtTaskUpdate("Test task +project1 @context1")
+	event := NewTodoTxtTaskUpdate("Test task +project1 @context1", "test")
 	err := repo.SaveEvent(event)
 	assert.NoError(t, err)
 	
@@ -88,8 +88,8 @@ func TestRepository_GetEvents(t *testing.T) {
 	repo := NewRepository()
 	
 	// Add some events
-	event1 := NewTodoTxtTaskUpdate("Task 1 +project1")
-	event2 := NewTodoTxtTaskUpdate("Task 2 +project2")
+	event1 := NewTodoTxtTaskUpdate("Task 1 +project1", "test")
+	event2 := NewTodoTxtTaskUpdate("Task 2 +project2", "test")
 	
 	assert.NoError(t, repo.SaveEvent(event1))
 	assert.NoError(t, repo.SaveEvent(event2))
@@ -100,7 +100,7 @@ func TestRepository_GetEvents(t *testing.T) {
 	assert.Equal(t, 2, len(events))
 	
 	// Verify that modifying the returned slice doesn't affect the repository
-	events = append(events, NewTodoTxtTaskUpdate("Task 3"))
+	events = append(events, NewTodoTxtTaskUpdate("Task 3", "test"))
 	assert.Equal(t, 3, len(events))
 	
 	// Check events again from repository
@@ -120,15 +120,15 @@ func TestRepository_RebuildState(t *testing.T) {
 	// Add events with timestamps out of order
 	mockTime3 := time.Date(2023, 7, 15, 12, 0, 0, 0, time.UTC)
 	now = func() time.Time { return mockTime3 }
-	event3 := NewTodoTxtTaskUpdate("Task 3 +project3")
+	event3 := NewTodoTxtTaskUpdate("Task 3 +project3", "test")
 	
 	mockTime1 := time.Date(2023, 7, 15, 10, 0, 0, 0, time.UTC)
 	now = func() time.Time { return mockTime1 }
-	event1 := NewTodoTxtTaskUpdate("Task 1 +project1")
+	event1 := NewTodoTxtTaskUpdate("Task 1 +project1", "test")
 	
 	mockTime2 := time.Date(2023, 7, 15, 11, 0, 0, 0, time.UTC)
 	now = func() time.Time { return mockTime2 }
-	event2 := NewTodoTxtTaskUpdate("Task 2 +project2")
+	event2 := NewTodoTxtTaskUpdate("Task 2 +project2", "test")
 	
 	// Add events in wrong order (3, 1, 2) directly to the event store
 	eventStore.events = append(eventStore.events, event3, event1, event2)

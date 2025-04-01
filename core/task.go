@@ -61,6 +61,7 @@ func (t Task) ToTodoTxt() string {
 type TodoTxtTaskUpdate struct {
 	BaseEvent
 	Lines string
+	Source string
 }
 
 // GetType returns the type of the event
@@ -114,7 +115,7 @@ func (e *TodoTxtTaskUpdate) apply(state *AppState) error {
 			DueDate:        todoTask.DueDate,
 			CompletedDate:  todoTask.CompletedDate,
 			Completed:      todoTask.Completed,
-			Source:         "todo.txt",
+			Source:         e.Source,
 		}
 
 		// Update the state

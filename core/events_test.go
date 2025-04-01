@@ -35,15 +35,15 @@ func TestReplayEvents(t *testing.T) {
 	store := &MockEventStore{}
 	
 	// Create some test events
-	event1 := NewTodoTxtTaskUpdate(`(A) 2023-05-15 Implement the core module +t5 @dev due:2023-06-01`)
+	event1 := NewTodoTxtTaskUpdate(`(A) 2023-05-15 Implement the core module +t5 @dev due:2023-06-01`, "test")
 	mockTime = mockTime.Add(time.Hour)
 	now = func() time.Time { return mockTime }
 	
-	event2 := NewTodoTxtTaskUpdate(`x 2023-06-10 2023-05-20 Fix todo parsing bug +t5 @bugfix uuid:be52544a-22c3-7d86-b3a6-47f84e3fe9b2`)
+	event2 := NewTodoTxtTaskUpdate(`x 2023-06-10 2023-05-20 Fix todo parsing bug +t5 @bugfix uuid:be52544a-22c3-7d86-b3a6-47f84e3fe9b2`, "test")
 	mockTime = mockTime.Add(time.Hour)
 	now = func() time.Time { return mockTime }
 	
-	event3 := NewTodoTxtTaskUpdate(`Buy groceries @personal +shopping due:2023-05-25`)
+	event3 := NewTodoTxtTaskUpdate(`Buy groceries @personal +shopping due:2023-05-25`, "test")
 	
 	// Add events to store
 	assert.NoError(t, store.SaveEvent(event1))
@@ -80,7 +80,7 @@ func TestApplyEvent(t *testing.T) {
 	state := NewAppState()
 	
 	// Create an event
-	event := NewTodoTxtTaskUpdate(`(A) 2023-05-15 Implement the core module +t5 @dev due:2023-06-01`)
+	event := NewTodoTxtTaskUpdate(`(A) 2023-05-15 Implement the core module +t5 @dev due:2023-06-01`, "test")
 	
 	// Apply event
 	err := ApplyEvent(state, event)
@@ -99,15 +99,15 @@ func TestEventOrder(t *testing.T) {
 	// Create events with timestamps out of order
 	mockTime3 := time.Date(2023, 7, 15, 12, 0, 0, 0, time.UTC)
 	now = func() time.Time { return mockTime3 }
-	event3 := NewTodoTxtTaskUpdate(`Buy groceries @personal +shopping due:2023-05-25`)
+	event3 := NewTodoTxtTaskUpdate(`Buy groceries @personal +shopping due:2023-05-25`, "test")
 	
 	mockTime1 := time.Date(2023, 7, 15, 10, 0, 0, 0, time.UTC)
 	now = func() time.Time { return mockTime1 }
-	event1 := NewTodoTxtTaskUpdate(`(A) 2023-05-15 Task 1 +project1`)
+	event1 := NewTodoTxtTaskUpdate(`(A) 2023-05-15 Task 1 +project1`, "test")
 	
 	mockTime2 := time.Date(2023, 7, 15, 11, 0, 0, 0, time.UTC)
 	now = func() time.Time { return mockTime2 }
-	event2 := NewTodoTxtTaskUpdate(`(B) 2023-05-16 Task 2 +project2`)
+	event2 := NewTodoTxtTaskUpdate(`(B) 2023-05-16 Task 2 +project2`, "test")
 	
 	// Create store with events in wrong order
 	store := &MockEventStore{}
@@ -144,7 +144,7 @@ func TestNewTodoTxtTaskUpdate(t *testing.T) {
 	now = func() time.Time { return mockTime }
 	
 	// Create new event
-	event := NewTodoTxtTaskUpdate("Test task")
+	event := NewTodoTxtTaskUpdate("Test task", "test")
 	
 	// Verify event properties
 	assert.Equal(t, "Test task", event.Lines)
@@ -157,8 +157,8 @@ func ExampleReplayEvents() {
 	store := &MockEventStore{}
 	
 	// Add task events
-	store.SaveEvent(NewTodoTxtTaskUpdate(`(A) 2023-05-15 First task +project1 @context1`))
-	store.SaveEvent(NewTodoTxtTaskUpdate(`(B) 2023-05-16 Second task +project2 @context2`))
+	store.SaveEvent(NewTodoTxtTaskUpdate(`(A) 2023-05-15 First task +project1 @context1`, "test"))
+	store.SaveEvent(NewTodoTxtTaskUpdate(`(B) 2023-05-16 Second task +project2 @context2`, "test"))
 	
 	// Replay events to build application state
 	state, err := ReplayEvents(store)

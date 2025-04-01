@@ -127,7 +127,7 @@ func (r *Repository) CreateTask(task Task) (uuid.UUID, error) {
 	todoTxt := task.ToTodoTxt()
 	
 	// Create and record the event
-	event := NewTodoTxtTaskUpdate(todoTxt)
+	event := NewTodoTxtTaskUpdate(todoTxt, "api")
 	err := r.SaveEvent(event)
 	if err != nil {
 		return uuid.Nil, err
@@ -164,7 +164,7 @@ func (r *Repository) UpdateTask(task Task) error {
 	todoTxt := task.ToTodoTxt()
 	
 	// Create and record the event
-	event := NewTodoTxtTaskUpdate(todoTxt)
+	event := NewTodoTxtTaskUpdate(todoTxt, "api")
 	return r.SaveEvent(event)
 }
 
@@ -189,7 +189,7 @@ func (r *Repository) DeleteTask(id uuid.UUID) error {
 	}
 	
 	todoTxt := emptyTask.ToTodoTxt()
-	event := NewTodoTxtTaskUpdate(todoTxt)
+	event := NewTodoTxtTaskUpdate(todoTxt, "api")
 	return r.SaveEvent(event)
 }
 
