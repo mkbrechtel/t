@@ -1,0 +1,9 @@
+# Test configuration for t5
+todo:
+  file: "./todo.txt"
+  ensure:
+    preferShortIds: true
+    enforceCompletionDate: true
+    
+eventstore:
+  file: "./events.jsonl"

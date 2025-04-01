@@ -21,6 +21,8 @@ run `./t5`
 go test -v ./...
 ```
 
+End-to-end tests are located in the `test` package and are run using the `go test` command too.
+
 ## Architecture
 
 t5 is built on an event-sourcing architecture, where all changes to the application state are recorded as events. The current state of the application can be reconstructed by replaying these events in order.
