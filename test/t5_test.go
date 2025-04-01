@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"t5.mkbrechtel.dev/cmd"
 )
 
 // Task represents a todo.txt task for testing purposes
@@ -79,22 +79,27 @@ func setupTestEnv(t *testing.T) (func(), string, string) {
 func runT5Command(t *testing.T, args ...string) (string, string, error) {
 	t.Helper()
 
-	// Find the t5 binary relative to the test directory
-	// Assuming the binary is in the project root
-	binPath, err := filepath.Abs(filepath.Join("..", "t5"))
-	if err != nil {
-		t.Fatalf("Failed to get absolute path for t5 binary: %v", err)
-	}
-	if _, err := os.Stat(binPath); os.IsNotExist(err) {
-		t.Fatalf("t5 binary not found at %s. Did you build it?", binPath)
-	}
-
-	cmd := exec.Command(binPath, args...)
-	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout
-	cmd.Stderr = &stderr
-	err = cmd.Run()
-
+	// Create a new root command to ensure a fresh state for each test
+	rootCmd := cmd.GetRootCommandForTesting()
+	
+	// Capture stdout and stderr
+	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
+	rootCmd.SetOut(stdout)
+	rootCmd.SetErr(stderr)
+	
+	// Set the arguments
+	rootCmd.SetArgs(args)
+	
+	// Reset viper to avoid config bleeding between tests
+	cmd.ResetConfig()
+	
+	// Execute the command
+	err := rootCmd.Execute()
+	
+	// Wait a moment to ensure file operations complete
+	// This helps with event store file creation and visibility
+	time.Sleep(100 * time.Millisecond)
+	
 	return stdout.String(), stderr.String(), err
 }
 

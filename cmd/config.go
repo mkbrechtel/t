@@ -36,6 +36,12 @@ func yamlStringSettings() string {
 	return string(bs)
 }
 
+// ResetConfig resets the viper configuration for testing purposes
+func ResetConfig() {
+	viper.Reset()
+	initConfig()
+}
+
 func init() {
 	rootCmd.AddCommand(configCmd)
 	
