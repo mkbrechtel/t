@@ -38,6 +38,10 @@ func yamlStringSettings() string {
 
 func init() {
 	rootCmd.AddCommand(configCmd)
+	
+	// Add event store configuration flag
+	rootCmd.PersistentFlags().String("eventstore", "", "Event store file path (if not specified, uses in-memory storage)")
+	viper.BindPFlag("eventstore.file", rootCmd.PersistentFlags().Lookup("eventstore"))
 }
 
 func initConfig() {

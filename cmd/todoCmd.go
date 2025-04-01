@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
+	"t5.mkbrechtel.dev/core"
 	todo "t5.mkbrechtel.dev/sync/todotxt"
 )
 
@@ -35,6 +36,7 @@ var todoUpdateCmd = &cobra.Command{
 	It processes the entire todo.txt file and updates task properties according to configuration.
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// Read tasks from todo.txt file
 		taskList, err := todo.ReadTodoFile(todoFile)
 		if err != nil {
 			log.Fatalf("Failed to read todo file: %v", err)
@@ -49,9 +51,30 @@ var todoUpdateCmd = &cobra.Command{
 
 		taskList = todo.EnsureTaskListProperties(taskList, config)
 
+		// Write updates back to todo.txt file
 		if err = todo.WriteTodoFile(taskList, todoFile); err != nil {
 			log.Fatalf("Failed to write todo file: %v", err)
 		}
+
+		// Initialize repository with configured event store
+		repo, err := InitRepository()
+		if err != nil {
+			log.Fatalf("Failed to initialize repository: %v", err)
+		}
+
+		// Create TodoTxtTaskUpdate event with the content of the todo.txt file
+		content, err := todo.GetTodoFileContent(taskList)
+		if err != nil {
+			log.Fatalf("Failed to get todo file content: %v", err)
+		}
+
+		event := core.NewTodoTxtTaskUpdate(content)
+		err = repo.SaveEvent(event)
+		if err != nil {
+			log.Fatalf("Failed to save event: %v", err)
+		}
+
+		log.Println("Task update saved to event store")
 	},
 }
 

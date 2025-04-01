@@ -3,6 +3,7 @@ package todo
 import (
 	"fmt"
 	"os"
+	"strings"
 	todo "github.com/1set/todotxt"
 )
 
@@ -46,4 +47,14 @@ func WriteTodoFile(taskList todo.TaskList, path string) error {
 	}
 
 	return nil
+}
+
+// GetTodoFileContent returns the string content of a TaskList
+// This is useful for creating TodoTxtTaskUpdate events
+func GetTodoFileContent(taskList todo.TaskList) (string, error) {
+	lines := make([]string, 0, len(taskList))
+	for _, task := range taskList {
+		lines = append(lines, task.String())
+	}
+	return strings.Join(lines, "\n"), nil
 }

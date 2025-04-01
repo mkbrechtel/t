@@ -68,22 +68,76 @@ ApplyEvent(state, event)
 
 ## Repository and Event Storage
 
-The `Repository` is a concrete in-memory implementation that manages both event storage and the application state:
+The `Repository` is the main entity that manages both event storage and the application state:
 
 ```go
 type Repository struct {
-    events []Event
+    EventStore
     state  *AppState
     mu     sync.RWMutex
 }
 ```
 
 The repository handles:
-- Storing events
+- Storing events via an EventStore implementation
 - Maintaining the current application state
 - Thread-safety with a mutex
 - Rebuilding the state from events when needed
 - Providing access to tasks and projects
+
+### Event Stores
+
+t5 supports multiple event store implementations:
+
+#### InMemoryEventStore
+
+The `InMemoryEventStore` is the simplest implementation that keeps events in memory. It's useful for testing and small applications:
+
+```go
+// Create a new in-memory event store
+store := NewInMemoryEventStore()
+
+// Create a repository with the in-memory store
+repo := NewRepositoryWithEventStore(store)
+```
+
+#### AppendLogEventStore
+
+The `AppendLogEventStore` stores events as JSON Lines (JSONL) in an append-only log file. Each line contains a serialized event in JSON format. This provides persistent storage between application runs:
+
+```go
+// Create a new append log event store
+store, err := NewAppendLogEventStore("/path/to/events.jsonl")
+if err != nil {
+    // Handle error
+}
+
+// Create a repository with the append log store
+repo := NewRepositoryWithEventStore(store)
+
+// The repository will automatically rebuild its state from the events
+err = repo.RebuildState()
+if err != nil {
+    // Handle error
+}
+```
+
+Each event in the JSONL file is stored as a JSON object with this structure:
+
+```json
+{
+  "type": "TodoTxtTaskUpdate",
+  "timestamp": "2023-07-15T12:34:56Z",
+  "data": {
+    // Event-specific data
+  }
+}
+```
+
+This format allows for:
+- Easy inspection of the event log
+- Compatibility with standard JSONL processing tools
+- Future extension to other storage mechanisms
 
 To use the repository:
 
@@ -136,7 +190,7 @@ The repository provides these high-level operations:
 
 All state-changing operations are implemented by creating and storing events, ensuring the event sourcing pattern is followed.
 
-Note that while a traditional event-sourced system would typically use an interface to abstract the storage, this implementation uses a concrete in-memory store for simplicity.
+The system now uses the `EventStore` interface to abstract different storage implementations, allowing for flexibility in how events are stored and retrieved.
 
 ## Adding New Event Types
 
@@ -198,3 +252,4 @@ Planned enhancements to the event system:
 - Event filtering for efficient queries
 - Snapshots for faster state reconstruction
 - Event subscription for real-time updates
+- Additional event store implementations (e.g., SQL database, cloud storage)

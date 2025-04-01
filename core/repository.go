@@ -25,6 +25,14 @@ func NewRepository() *Repository {
 	}
 }
 
+// NewRepositoryWithEventStore creates a repository with a custom event store
+func NewRepositoryWithEventStore(store EventStore) *Repository {
+	return &Repository{
+		EventStore: store,
+		state:      NewAppState(),
+	}
+}
+
 // SaveEvent persists an event and applies it to the current state
 func (r *Repository) SaveEvent(event Event) error {
 	r.mu.Lock()
