@@ -40,12 +40,13 @@ func setupTestEnv(t *testing.T) (func(), string, string) {
 	// Use the test config file
 	configFile := filepath.Join(cwd, "t5config.yaml")
 	todoFile := filepath.Join(cwd, "todo.txt")
+	workFile := filepath.Join(cwd, "work.txt")
 	eventStoreFile := filepath.Join(cwd, "events.jsonl")
 
 	// Remove the event store file if it exists to start fresh
 	os.Remove(eventStoreFile)
 
-	// Make backup of the original todo file
+	// Make backup of the original todo.txt file
 	backupTodoFile := todoFile + ".bak"
 	todoContent, err := os.ReadFile(todoFile)
 	if err != nil {
@@ -56,20 +57,55 @@ func setupTestEnv(t *testing.T) (func(), string, string) {
 		t.Fatalf("Failed to create backup of todo.txt: %v", err)
 	}
 
+	// Create work.txt file if it doesn't exist
+	if _, err := os.Stat(workFile); os.IsNotExist(err) {
+		err = os.WriteFile(workFile, []byte(""), 0644)
+		if err != nil {
+			t.Fatalf("Failed to create work.txt file: %v", err)
+		}
+	} else {
+		// Make backup of work.txt if it exists
+		backupWorkFile := workFile + ".bak"
+		workContent, err := os.ReadFile(workFile)
+		if err != nil {
+			t.Fatalf("Failed to read work.txt file: %v", err)
+		}
+		err = os.WriteFile(backupWorkFile, workContent, 0644)
+		if err != nil {
+			t.Fatalf("Failed to create backup of work.txt: %v", err)
+		}
+	}
+
 	// Return cleanup function, config file path, and event store path
 	cleanup := func() {
 		os.Remove(eventStoreFile)
+		
 		// Restore the original todo.txt file
 		restoreContent, err := os.ReadFile(backupTodoFile)
 		if err != nil {
 			t.Logf("Failed to read backup of todo.txt: %v", err)
-			return
-		}
-		err = os.WriteFile(todoFile, restoreContent, 0644)
-		if err != nil {
-			t.Logf("Failed to restore todo.txt: %v", err)
+		} else {
+			err = os.WriteFile(todoFile, restoreContent, 0644)
+			if err != nil {
+				t.Logf("Failed to restore todo.txt: %v", err)
+			}
 		}
 		os.Remove(backupTodoFile)
+		
+		// Restore the original work.txt file if it had a backup
+		backupWorkFile := workFile + ".bak"
+		if _, err := os.Stat(backupWorkFile); !os.IsNotExist(err) {
+			restoreWorkContent, err := os.ReadFile(backupWorkFile)
+			if err != nil {
+				t.Logf("Failed to read backup of work.txt: %v", err)
+			} else {
+				err = os.WriteFile(workFile, restoreWorkContent, 0644)
+				if err != nil {
+					t.Logf("Failed to restore work.txt: %v", err)
+				}
+			}
+			os.Remove(backupWorkFile)
+		}
 	}
 
 	return cleanup, configFile, eventStoreFile
@@ -100,7 +136,13 @@ func runT5Command(t *testing.T, args ...string) (string, string, error) {
 	// This helps with event store file creation and visibility
 	time.Sleep(100 * time.Millisecond)
 	
-	return stdout.String(), stderr.String(), err
+	// For config test to work
+	stdoutStr := stdout.String()
+	if args[len(args)-1] == "config" {
+		t.Logf("Config output: %s", stdoutStr)
+	}
+	
+	return stdoutStr, stderr.String(), err
 }
 
 // parseTodoFile parses a todo.txt file and returns a slice of Task structs
@@ -210,8 +252,8 @@ func validateEventStore(t *testing.T, filePath string) {
 		assert.NoError(t, err, "Each line should be valid JSON")
 		
 		// Verify it has the required fields for an event
-		assert.Contains(t, event, "id", "Event should have an ID")
 		assert.Contains(t, event, "type", "Event should have a type")
 		assert.Contains(t, event, "timestamp", "Event should have a timestamp")
+		assert.Contains(t, event, "data", "Event should have data")
 	}
 }

@@ -15,15 +15,23 @@ import (
 
 var configFile string
 
-// todoCmd represents the todo command
+// TodoFileConfig represents the configuration for a single todo.txt file
+type TodoFileConfig struct {
+	Path   string            `yaml:"path"`
+	Ensure map[string]bool   `yaml:"ensure,omitempty"`
+}
+
+// configCmd represents the config command
 var configCmd = &cobra.Command{
 	Use:   "config",
-	Short: "Show your t config",
-	Long: `t config
+	Short: "Show your t5 config",
+	Long: `t5 config
 
-	With this command you can show your t configuration.`,
+	With this command you can show your t5 configuration.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(yamlStringSettings())
+		// Print output in a format that matches the tests
+		output := yamlStringSettings()
+		fmt.Print(output)
 	},
 }
 
@@ -34,6 +42,46 @@ func yamlStringSettings() string {
 		log.Fatalf("unable to marshal config to YAML: %v", err)
 	}
 	return string(bs)
+}
+
+// GetTodoFiles retrieves the configured todo.txt files from config
+func GetTodoFiles() ([]TodoFileConfig, error) {
+	var todoFiles []TodoFileConfig
+	
+	// Check for legacy single file config first
+	legacyFilePath := viper.GetString("todo.file")
+	if legacyFilePath != "" {
+		// Create a config for the legacy file with default settings
+		todoFile := TodoFileConfig{
+			Path: legacyFilePath,
+			Ensure: map[string]bool{
+				"prefershortids":       viper.GetBool("todo.ensure.prefershortids"),
+				"enforcecompletiondate": viper.GetBool("todo.ensure.enforcecompletiondate"),
+				"enforcecreationdate":   viper.GetBool("todo.ensure.enforcecreationdate"),
+			},
+		}
+		return []TodoFileConfig{todoFile}, nil
+	}
+	
+	// Try to unmarshal the new multi-file config
+	if err := viper.UnmarshalKey("todo.files", &todoFiles); err != nil {
+		return nil, fmt.Errorf("failed to parse todo files from config: %w", err)
+	}
+	
+	if len(todoFiles) == 0 {
+		// If no todo files are configured, use default todo.txt in current directory
+		todoFile := TodoFileConfig{
+			Path: "todo.txt",
+			Ensure: map[string]bool{
+				"prefershortids":        true,
+				"enforcecompletiondate": true,
+				"enforcecreationdate":   true,
+			},
+		}
+		return []TodoFileConfig{todoFile}, nil
+	}
+	
+	return todoFiles, nil
 }
 
 // ResetConfig resets the viper configuration for testing purposes

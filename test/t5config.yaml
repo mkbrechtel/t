@@ -1,9 +1,14 @@
 # Test configuration for t5
 todo:
-  file: "./todo.txt"
-  ensure:
-    preferShortIds: true
-    enforceCompletionDate: true
+  files:
+    - path: "./todo.txt"
+      ensure:
+        prefershortids: true
+        enforcecompletiondate: true
+    - path: "./work.txt"
+      ensure:
+        prefershortids: true
+        enforcecompletiondate: true
     
 eventstore:
   file: "./events.jsonl"
