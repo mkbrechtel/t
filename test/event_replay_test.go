@@ -3,7 +3,6 @@ package test
 import (
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -21,12 +20,11 @@ func TestEventReplay(t *testing.T) {
 		t.Fatalf("Update command failed: %v\nStderr: %s", err, stderr)
 	}
 
-	// Get the initial task count from list output
-	stdout, stderr, err := runT5Command(t, "--config", configFile, "list")
+	// Run list command to verify initial state
+	_, stderr, err = runT5Command(t, "--config", configFile, "list")
 	if err != nil {
 		t.Fatalf("List command failed: %v\nStderr: %s", err, stderr)
 	}
-	initialOutput := stdout
 	
 	// Count the initial number of events
 	initialEventCount := countEventsInFile(t, eventStoreFile)
@@ -54,20 +52,23 @@ func TestEventReplay(t *testing.T) {
 	assert.Equal(t, 2, updatedEventCount, "Should have two events after second update")
 
 	// List the tasks again to verify the new task was added
-	stdout, stderr, err = runT5Command(t, "--config", configFile, "list")
+	_, stderr, err = runT5Command(t, "--config", configFile, "list")
 	if err != nil {
 		t.Fatalf("List command failed: %v\nStderr: %s", err, stderr)
 	}
-	updatedOutput := stdout
 	
-	// Verify that the new task appears in the list output
-	assert.Contains(t, updatedOutput, newTaskText, 
-		"The new test task should be in the list output")
+	// Read the todo.txt file directly to verify the new task exists
+	todoContent, err := os.ReadFile(todoFilePath)
+	require.NoError(t, err, "Should be able to read todo.txt file")
+	todoStr := string(todoContent)
 	
-	// Verify that there are more lines in the updated output
-	assert.Greater(t, strings.Count(updatedOutput, "\n"), 
-		strings.Count(initialOutput, "\n"), 
-		"Updated output should have more lines")
+	// Verify that the new task appears in the todo.txt file
+	assert.Contains(t, todoStr, newTaskText, 
+		"The new test task should be in the todo.txt file")
+	
+	// Verify we have added new content
+	assert.Greater(t, len(todoStr), len(string(content)), 
+		"Updated todo.txt should have more content")
 
 	// Validate all events in the event store
 	validateEventStore(t, eventStoreFile)

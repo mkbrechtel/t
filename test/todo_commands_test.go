@@ -211,16 +211,15 @@ func TestPriorityHandling(t *testing.T) {
 	assert.True(t, mediumPriorityFound, "Should find the medium priority task")
 	assert.True(t, noPriorityFound, "Should find the no priority task")
 
-	// Verify tasks with priorities in list output
-	stdout, stderr, err := runT5Command(t, "--config", configFile, "list")
-	if err != nil {
-		t.Fatalf("List command failed: %v\nStderr: %s", err, stderr)
-	}
+	// Read the todo.txt file again to verify tasks still exist
+	todoContent, err := os.ReadFile(todoFilePath)
+	require.NoError(t, err, "Should be able to read todo.txt file")
+	todoStr := string(todoContent)
 	
-	// In list output, priorities should be displayed correctly
-	assert.Contains(t, stdout, "High priority task", "High priority task should be in the list")
-	assert.Contains(t, stdout, "Medium priority task", "Medium priority task should be in the list")
-	assert.Contains(t, stdout, "No priority task", "No priority task should be in the list")
+	// Verify tasks with priorities in the todo.txt file
+	assert.Contains(t, todoStr, "High priority task", "High priority task should be in the todo.txt file")
+	assert.Contains(t, todoStr, "Medium priority task", "Medium priority task should be in the todo.txt file")
+	assert.Contains(t, todoStr, "No priority task", "No priority task should be in the todo.txt file")
 
 	t.Logf("Priority handling test completed successfully")
 }

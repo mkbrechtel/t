@@ -45,7 +45,27 @@ the event replay system to reconstruct the current state.
 			if task.Completed {
 				status = "x"
 			}
-			fmt.Printf("%d. [%s] (%s) %s\n", i+1, status, priority, task.Todo)
+			
+			// Format projects and contexts
+			projects := ""
+			for _, proj := range task.Projects {
+				projects += " +" + proj
+			}
+			
+			contexts := ""
+			for _, ctx := range task.Contexts {
+				contexts += " @" + ctx
+			}
+			
+			// Add any due date if present
+			dueDate := ""
+			if !task.DueDate.IsZero() {
+				dueDate = " t:" + task.DueDate.Format("2006-01-02")
+			}
+			
+			// Print task with optional metadata
+			fmt.Printf("%d. [%s] (%s) %s%s%s%s\n", 
+				i+1, status, priority, task.Todo, projects, contexts, dueDate)
 		}
 	},
 }

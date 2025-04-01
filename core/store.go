@@ -78,48 +78,47 @@ func (s *AppendLogEventStore) SaveEvent(event Event) error {
 	defer s.mu.Unlock()
 
 	// Open the file in append mode
-	file, err := os.OpenFile(s.filePath, os.O_APPEND|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(s.filePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to open event log file: %w", err)
 	}
 	defer file.Close()
 
-	// Serialize the event based on its type
-	var eventData []byte
+	// Create the EventData wrapper
+	wrapper := EventData{
+		Type:      event.GetType(),
+		Timestamp: event.GetTimestamp(),
+		Data:      nil, // Will be filled below
+	}
+
+	// Marshal the event based on its type directly into the wrapper's Data field
 	switch e := event.(type) {
 	case *TodoTxtTaskUpdate:
 		data, err := json.Marshal(e)
 		if err != nil {
 			return fmt.Errorf("failed to marshal TodoTxtTaskUpdate event: %w", err)
 		}
-		eventData = data
+		wrapper.Data = json.RawMessage(data)
 	case *TaskStartTime:
 		data, err := json.Marshal(e)
 		if err != nil {
 			return fmt.Errorf("failed to marshal TaskStartTime event: %w", err)
 		}
-		eventData = data
+		wrapper.Data = json.RawMessage(data)
 	case *TaskEndTime:
 		data, err := json.Marshal(e)
 		if err != nil {
 			return fmt.Errorf("failed to marshal TaskEndTime event: %w", err)
 		}
-		eventData = data
+		wrapper.Data = json.RawMessage(data)
 	case *SetTimeBudgetForProject:
 		data, err := json.Marshal(e)
 		if err != nil {
 			return fmt.Errorf("failed to marshal SetTimeBudgetForProject event: %w", err)
 		}
-		eventData = data
+		wrapper.Data = json.RawMessage(data)
 	default:
 		return fmt.Errorf("unsupported event type: %s", event.GetType())
-	}
-
-	// Create the EventData wrapper
-	wrapper := EventData{
-		Type:      event.GetType(),
-		Timestamp: event.GetTimestamp(),
-		Data:      eventData,
 	}
 
 	// Marshal the wrapper

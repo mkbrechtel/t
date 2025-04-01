@@ -20,9 +20,20 @@ func InitRepository() (*core.Repository, error) {
 		return core.NewRepository(), nil
 	}
 
-	// If the path is not absolute, make it relative to the user's data home directory
+	// If the path is not absolute, make it relative to the working directory or data home
+	// Paths starting with ./ are relative to the working directory
 	if !filepath.IsAbs(eventStorePath) {
-		eventStorePath = filepath.Join(xdg.DataHome, "t5", eventStorePath)
+		if len(eventStorePath) >= 2 && eventStorePath[0:2] == "./" {
+			// Keep as relative path for testing
+			wd, err := os.Getwd()
+			if err != nil {
+				return nil, fmt.Errorf("failed to get current working directory: %w", err)
+			}
+			eventStorePath = filepath.Join(wd, eventStorePath[2:])
+		} else {
+			// Otherwise use the data home directory
+			eventStorePath = filepath.Join(xdg.DataHome, "t5", eventStorePath)
+		}
 	}
 
 	// Ensure the directory exists
