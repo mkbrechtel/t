@@ -126,7 +126,7 @@ func containsString(slice []string, str string) bool {
 
 // Helper function to parse date strings
 func mustParseDate(dateStr string) time.Time {
-	t, err := time.Parse(todo.DateLayout, dateStr)
+	t, err := time.ParseInLocation(todo.DateLayout, dateStr, time.Local)
 	if err != nil {
 		panic("Invalid date format: " + dateStr)
 	}
