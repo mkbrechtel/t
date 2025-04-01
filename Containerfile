@@ -1,6 +1,7 @@
 FROM debian:trixie as env
 
-RUN apt-get update && apt-get install -y golang ca-certificates && apt-get clean
+RUN apt-get update && apt-get install -y golang ca-certificates tzdata && apt-get clean
+ENV TZ=Europe/Berlin
 
 ENV GOPATH=/opt/go
 
