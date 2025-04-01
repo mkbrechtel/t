@@ -127,8 +127,8 @@ func TestTaskLifecycle(t *testing.T) {
 	err = os.WriteFile(todoFilePath, []byte(strings.Join(newLines, "\n")), 0644)
 	require.NoError(t, err, "Should be able to write to the todo.txt file")
 
-	// Run update to process the completion
-	_, stderr, err = runT5Command(t, "--config", configFile, "todo", "update")
+	// Run update to process the completion with explicit flag for enforce-completion-date
+	_, stderr, err = runT5Command(t, "--config", configFile, "--enforce-completion-date=true", "todo", "update")
 	if err != nil {
 		t.Fatalf("Update command failed: %v\nStderr: %s", err, stderr)
 	}

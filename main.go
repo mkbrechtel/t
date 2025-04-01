@@ -1,7 +1,15 @@
 package main
 
-import "t5.mkbrechtel.dev/cmd"
+import (
+	"fmt"
+	"os"
+	
+	"t5.mkbrechtel.dev/cmd"
+)
 
 func main() {
-	cmd.Execute()
+	if err := cmd.Execute(os.Args); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
 }

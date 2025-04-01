@@ -115,22 +115,14 @@ func setupTestEnv(t *testing.T) (func(), string, string) {
 func runT5Command(t *testing.T, args ...string) (string, string, error) {
 	t.Helper()
 
-	// Create a new root command to ensure a fresh state for each test
-	rootCmd := cmd.GetRootCommandForTesting()
-	
 	// Capture stdout and stderr
 	stdout, stderr := &bytes.Buffer{}, &bytes.Buffer{}
-	rootCmd.SetOut(stdout)
-	rootCmd.SetErr(stderr)
 	
-	// Set the arguments
-	rootCmd.SetArgs(args)
+	// Prepare arguments with the program name as first argument (like os.Args)
+	fullArgs := append([]string{"t5"}, args...)
 	
-	// Reset viper to avoid config bleeding between tests
-	cmd.ResetConfig()
-	
-	// Execute the command
-	err := rootCmd.Execute()
+	// Execute the command with our captured output
+	err := cmd.ExecuteWithArgs(fullArgs, stdout, stderr)
 	
 	// Wait a moment to ensure file operations complete
 	// This helps with event store file creation and visibility
@@ -138,7 +130,7 @@ func runT5Command(t *testing.T, args ...string) (string, string, error) {
 	
 	// For config test to work
 	stdoutStr := stdout.String()
-	if args[len(args)-1] == "config" {
+	if len(args) > 0 && args[len(args)-1] == "config" {
 		t.Logf("Config output: %s", stdoutStr)
 	}
 	
