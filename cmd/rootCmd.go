@@ -5,47 +5,19 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"os"
 )
 
 // Execute parses flags and runs the appropriate command with the given args
+// If stdin is nil, os.Stdin will be used
 // If stdout and stderr are nil, os.Stdout and os.Stderr will be used
-func Execute(args []string, stdout, stderr io.Writer) error {
-	// If no writers are provided, use standard output and error
-	if stdout == nil {
-		stdout = os.Stdout
-	}
-	if stderr == nil {
-		stderr = os.Stderr
-	}
-
-	// Save original stdout and stderr
-	oldStdout, oldStderr := os.Stdout, os.Stderr
-	
-	// Create pipes for redirecting output
-	rOut, wOut, _ := os.Pipe()
-	rErr, wErr, _ := os.Pipe()
-	
-	// Replace stdout and stderr
-	os.Stdout = wOut
-	os.Stderr = wErr
-	
-	// Restore original stdout and stderr when done
-	defer func() {
-		os.Stdout = oldStdout
-		os.Stderr = oldStderr
-	}()
-	
-	// Start copying to provided writers
-	go io.Copy(stdout, rOut)
-	go io.Copy(stderr, rErr)
+func Execute(args []string, stdin io.ReadCloser, stdout, stderr io.WriteCloser) error {
 
 	ctx := NewAppContext()
-	
+
 	// Setup custom flag set for parsing the given args
 	fs := flag.NewFlagSet("t5", flag.ExitOnError)
 	ctx.FlagSet = fs
-	
+
 	// Setup flags on our custom FlagSet
 	ctx.SetupFlags()
 
@@ -68,7 +40,7 @@ func Execute(args []string, stdout, stderr io.Writer) error {
 			return fmt.Errorf("error parsing flags: %w", err)
 		}
 	}
-	
+
 	// Load config file after parsing flags
 	if err := ctx.LoadConfigFile(); err != nil {
 		log.Printf("Warning: failed to load config file: %v", err)
@@ -132,9 +104,9 @@ func Execute(args []string, stdout, stderr io.Writer) error {
 	}
 
 	// Close the write ends of the pipes to flush output
-	wOut.Close()
-	wErr.Close()
-	
+	stdout.Close()
+	stderr.Close()
+
 	return nil
 }
 
