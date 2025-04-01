@@ -6,6 +6,29 @@ It uses the [todo.txt](http://todotxt.org/) format for your todo list.
 
 _WIP_
 
+## Usage
+
+Show help:
+```
+t5 help
+```
+
+Available commands:
+
+* `t5 list` - List all tasks with their priorities and metadata
+* `t5 update [file]` - Update and ensure properties of tasks (IDs, dates)
+* `t5 todo [update [file]]` - Alias for update command
+* `t5 sync [file]` - Synchronize tasks between todo.txt and event store
+* `t5 config` - Display current configuration settings
+
+Common flags:
+* `--todo, -t` - Specify todo.txt file path
+* `--config, -c` - Specify config file path
+* `--eventstore` - Specify event store file path
+* `--prefer-short-ids` - Use short form IDs
+* `--enforce-creation-date` - Ensure tasks have creation dates
+* `--enforce-completion-date` - Ensure completed tasks have completion dates
+
 ## Build
 
 ```
