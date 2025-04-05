@@ -32,7 +32,7 @@ func TestAddCommand(t *testing.T) {
 	originalCount := len(originalTasks)
 	
 	// Run the add command with a new task
-	_, stderr, err = runT5Command(t, "--config", configFile, "add", "(A) New test task +project @context")
+	_, stderr, err = runT5Command(t, "--config", configFile, "add", "todo", "(A) New test task +project @context")
 	if err != nil {
 		t.Fatalf("Add command failed: %v\nStderr: %s", err, stderr)
 	}
@@ -76,6 +76,7 @@ func TestModifyCommand(t *testing.T) {
 
 // TestFilteredList tests the filtering capabilities of the 'list' command
 func TestFilteredList(t *testing.T) {
+	// Note: This test uses direct repository access rather than running CLI commands
 	cleanup, configFile, eventStoreFile := setupTestEnv(t)
 	defer cleanup()
 
@@ -189,6 +190,7 @@ func TestRegexFilter(t *testing.T) {
 }
 
 // TestBooleanCombinators tests the boolean combinator filters in code
+// Note: This test uses direct repository access rather than CLI commands
 func TestBooleanCombinators(t *testing.T) {
 	cleanup, configFile, eventStoreFile := setupTestEnv(t)
 	defer cleanup()

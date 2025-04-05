@@ -23,7 +23,7 @@ func TestList(t *testing.T) {
 	tasks := parseTodoFile(t, todoFilePath)
 
 	// Then test the list command
-	stdout, stderr, err := runT5Command(t, "--config", configFile, "list")
+	stdout, stderr, err := runT5Command(t, "--config", configFile, "list", "todo")
 	if err != nil {
 		t.Fatalf("List command failed: %v\nStderr: %s", err, stderr)
 	}

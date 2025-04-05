@@ -21,7 +21,7 @@ func TestEventReplay(t *testing.T) {
 	}
 
 	// Run list command to verify initial state
-	_, stderr, err = runT5Command(t, "--config", configFile, "list")
+	_, stderr, err = runT5Command(t, "--config", configFile, "list", "todo")
 	if err != nil {
 		t.Fatalf("List command failed: %v\nStderr: %s", err, stderr)
 	}
@@ -52,7 +52,7 @@ func TestEventReplay(t *testing.T) {
 	assert.Equal(t, 2, updatedEventCount, "Should have two events after second update")
 
 	// List the tasks again to verify the new task was added
-	_, stderr, err = runT5Command(t, "--config", configFile, "list")
+	_, stderr, err = runT5Command(t, "--config", configFile, "list", "todo")
 	if err != nil {
 		t.Fatalf("List command failed: %v\nStderr: %s", err, stderr)
 	}
