@@ -19,9 +19,21 @@ func (e *FileError) Error() string {
 }
 
 // ReadTodoFile reads a todo.txt file and returns a TaskList
+// If the file doesn't exist, it creates an empty one
 func ReadTodoFile(path string) (todo.TaskList, error) {
+	// Try to open the file
 	file, err := os.Open(path)
 	if err != nil {
+		// If the file doesn't exist, create it and return an empty task list
+		if os.IsNotExist(err) {
+			// Create an empty file
+			file, err := os.Create(path)
+			if err != nil {
+				return nil, &FileError{Op: "create", Path: path, Err: err}
+			}
+			file.Close()
+			return todo.TaskList{}, nil
+		}
 		return nil, &FileError{Op: "read", Path: path, Err: err}
 	}
 	defer file.Close()
