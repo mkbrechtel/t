@@ -282,6 +282,54 @@ func TestTemporalStressTest(t *testing.T) {
 	}
 }
 
+func TestIsUUID(t *testing.T) {
+	tests := []struct {
+		name string
+		id   string
+		want bool
+	}{
+		{
+			name: "Empty string",
+			id:   "",
+			want: false,
+		},
+		{
+			name: "Valid long UUID",
+			id:   "0192da73-39ce-76ac-826b-bb3fd7e9fd84",
+			want: true,
+		},
+		{
+			name: "Valid short UUID",
+			id:   "tI4JLiW7MZhvJqbsrksqWspQt",
+			want: true,
+		},
+		{
+			name: "Non-UUID string",
+			id:   "abc123",
+			want: false,
+		},
+		{
+			name: "Malformed UUID",
+			id:   "0192da73-39ce-76ac-826b-bb3fd7e9fd",
+			want: false,
+		},
+		{
+			name: "Non-UUID with UUID length",
+			id:   "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := IsUUID(tt.id)
+			if got != tt.want {
+				t.Errorf("IsUUID() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestRandomTemporalStressTest(t *testing.T) {
 	const numOperations = 1_000_000
 

@@ -6,6 +6,7 @@ import (
 
 	uuid "github.com/gofrs/uuid/v5"
 	todo "github.com/1set/todotxt"
+	"t5.mkbrechtel.dev/utils"
 )
 
 type Task struct {
@@ -26,11 +27,16 @@ type Task struct {
 
 // ToTodoTxt converts a Task to todo.txt format
 func (t Task) ToTodoTxt() string {
-	// Ensure the UUID is stored in AdditionalTags
-	if t.AdditionalTags == nil {
-		t.AdditionalTags = make(map[string]string)
+	// Make a copy of AdditionalTags to avoid modifying the original
+	additionalTags := make(map[string]string)
+	if t.AdditionalTags != nil {
+		for k, v := range t.AdditionalTags {
+			additionalTags[k] = v
+		}
 	}
-	t.AdditionalTags["uuid"] = t.ID.String()
+	
+	// Ensure the UUID is stored - always add the standard UUID format
+	additionalTags["uuid"] = utils.LongEncodeUUID(t.ID)
 	
 	// Create a todo.txt task
 	todoTask := todo.Task{
@@ -38,7 +44,7 @@ func (t Task) ToTodoTxt() string {
 		Priority:       t.Priority,
 		Projects:       t.Projects,
 		Contexts:       t.Contexts,
-		AdditionalTags: t.AdditionalTags,
+		AdditionalTags: additionalTags,
 		Completed:      t.Completed,
 	}
 	
@@ -86,15 +92,31 @@ func (e *TodoTxtTaskUpdate) apply(state *AppState) error {
 	// Process each todo.txt task and update the app state
 	for _, todoTask := range todoTasks {
 		// Generate or extract a UUID for the task
-		taskID := uuid.FromStringOrNil(todoTask.AdditionalTags["uuid"])
-		if taskID == uuid.Nil {
-			// Create a new UUID if none exists
-			newID, err := uuid.NewV4()
-			if err != nil {
-				return err
-			}
-			taskID = newID
+		var taskID uuid.UUID
 
+		// Check UUID tag first
+		if uuidStr, hasUUID := todoTask.AdditionalTags["uuid"]; hasUUID {
+			parsedID, err := utils.DecodeUUID(uuidStr)
+			if err == nil {
+				taskID = parsedID
+			}
+		}
+		
+		// If no UUID found or invalid, check ID tag
+		if taskID == uuid.Nil {
+			if idStr, hasID := todoTask.AdditionalTags["id"]; hasID {
+				if utils.IsUUID(idStr) {
+					// Try to parse as UUID if it's in UUID format
+					parsedID, _ := utils.DecodeUUID(idStr)
+					taskID = parsedID
+				}
+			}
+		}
+		
+		// If still no valid UUID, create a new one
+		if taskID == uuid.Nil {
+			taskID = utils.NewUUID()
+			
 			// Add the UUID back to the task
 			if todoTask.AdditionalTags == nil {
 				todoTask.AdditionalTags = make(map[string]string)

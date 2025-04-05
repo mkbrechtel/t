@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/gofrs/uuid/v5"
+	"t5.mkbrechtel.dev/utils"
 )
 
 // Repository is an implementation of event storage and state management
@@ -116,11 +117,7 @@ func (r *Repository) RebuildState() error {
 func (r *Repository) CreateTask(task Task) (uuid.UUID, error) {
 	// Ensure the task has a UUID
 	if task.ID == uuid.Nil {
-		id, err := uuid.NewV4()
-		if err != nil {
-			return uuid.Nil, err
-		}
-		task.ID = id
+		task.ID = utils.NewUUID()
 	}
 	
 	// Convert task to todo.txt format
@@ -268,11 +265,7 @@ func (r *Repository) CreateProject(project Project) (uuid.UUID, error) {
 	
 	// Ensure the project has an ID
 	if project.ID == uuid.Nil {
-		id, err := uuid.NewV4()
-		if err != nil {
-			return uuid.Nil, err
-		}
-		project.ID = id
+		project.ID = utils.NewUUID()
 	}
 	
 	// Add to state

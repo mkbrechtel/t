@@ -5,10 +5,10 @@ import (
 	"os"
 	"time"
 	
-	"github.com/gofrs/uuid/v5"
 	todo "github.com/1set/todotxt"
 	
 	"t5.mkbrechtel.dev/core"
+	"t5.mkbrechtel.dev/utils"
 )
 
 // SyncResult contains statistics about the sync operation
@@ -57,7 +57,7 @@ func SyncWithRepository(repo *core.Repository, todoFilePath string) (*SyncResult
 	
 	// Second pass - check for updates from todo.txt to repo
 	for uuidStr, todoTask := range todoTasksByUUID {
-		id, err := uuid.FromString(uuidStr)
+		id, err := utils.DecodeUUID(uuidStr)
 		if err == nil {
 			if repoTask, exists := appState.Tasks[id]; exists {
 				// Compare tasks, detect changes
@@ -256,8 +256,8 @@ func repoTaskToTodoTask(task core.Task) todo.Task {
 		todoTask.AdditionalTags[k] = v
 	}
 	
-	// Ensure UUID is set
-	todoTask.AdditionalTags["uuid"] = task.ID.String()
+	// Ensure UUID is set with long format
+	todoTask.AdditionalTags["uuid"] = utils.LongEncodeUUID(task.ID)
 	
 	// Set modified timestamp
 	todoTask.AdditionalTags["modified"] = time.Now().Format(time.RFC3339)

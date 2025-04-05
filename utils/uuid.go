@@ -50,6 +50,7 @@ func DecodeUUID(encid string) (uuidv7.UUID, error) {
 		return uuidv7.Nil, fmt.Errorf("empty UUID string")
 	}
 
+	// Standard UUID format (36 characters with hyphens)
 	if len(encid) == 36 {
 		u, err := uuidv7.FromString(encid)
 		if err != nil {
@@ -58,11 +59,12 @@ func DecodeUUID(encid string) (uuidv7.UUID, error) {
 		return u, nil
 	}
 
+	// Try to decode our custom short format
 	decoded := decodeReplacer.Replace(encid)
-
 	b, err := customEncoding.DecodeString(decoded)
 	if err != nil {
-		return uuidv7.Nil, fmt.Errorf("failed to decode base64: %w", err)
+		// Not a valid encoded UUID
+		return uuidv7.Nil, fmt.Errorf("not a valid UUID format: %w", err)
 	}
 
 	u, err := uuidv7.FromBytes(b)
@@ -70,4 +72,10 @@ func DecodeUUID(encid string) (uuidv7.UUID, error) {
 		return uuidv7.Nil, fmt.Errorf("failed to parse UUID from bytes: %w", err)
 	}
 	return u, nil
+}
+
+// IsUUID checks if the given string is a valid UUID in any format
+func IsUUID(id string) bool {
+	_, err := DecodeUUID(id)
+	return err == nil
 }

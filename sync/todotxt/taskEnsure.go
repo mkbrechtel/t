@@ -59,35 +59,69 @@ func ensureCompletionDate(task *todo.Task) {
 	task.CompletedDate = time.Now()
 }
 
-// ensureIdentifier ensures tasks have either a short-form ID or UUID and returns the UUID
+// ensureIdentifier ensures tasks have proper identifiers and returns the UUID
+// If the task has a non-UUID id, it preserves that id and adds a uuid.
+// If the task has a UUID id, it formats it according to preference.
 func ensureIdentifier(task *todo.Task, preferShortIDs bool) (uuidv7.UUID) {
 	if task.AdditionalTags == nil {
 		task.AdditionalTags = make(map[string]string)
 	}
 
-	// Try to get existing UUID first
 	var id = utils.NewUUID() // Default to new UUID
-	if uuidStr, hasUuid := task.AdditionalTags["uuid"]; hasUuid {
+	var hasUUID = false
+	var hasID = false
+
+	// Check for existing UUID tag
+	if uuidStr, exists := task.AdditionalTags["uuid"]; exists && uuidStr != "" {
 		if parsedId, err := utils.DecodeUUID(uuidStr); err == nil {
 			id = parsedId
-			delete(task.AdditionalTags, "uuid")
+			hasUUID = true
 		}
 	}
 
-	// If no valid UUID was found in uuid tag, try id tag
-	if idStr, hasId := task.AdditionalTags["id"]; hasId {
-		if parsedId, err := utils.DecodeUUID(idStr); err == nil {
+	// Check for existing ID tag
+	if idStr, exists := task.AdditionalTags["id"]; exists && idStr != "" {
+		if utils.IsUUID(idStr) {
+			// ID is a valid UUID
+			parsedId, _ := utils.DecodeUUID(idStr)
 			id = parsedId
+			hasID = true
+			// This is a UUID formatted as ID, so handle according to preference
+			if preferShortIDs {
+				task.AdditionalTags["id"] = utils.ShortEncodeUUID(id)
+				delete(task.AdditionalTags, "uuid")
+			} else {
+				task.AdditionalTags["uuid"] = utils.LongEncodeUUID(id)
+				delete(task.AdditionalTags, "id")
+			}
+		} else {
+			// ID exists but is not a UUID - keep it and ensure a UUID is present
+			hasID = true
+			task.AdditionalTags["uuid"] = utils.LongEncodeUUID(id)
 		}
 	}
 
-	// Set the ID in preferred format
-	if preferShortIDs {
+	// If no UUID or ID exists, create based on preference
+	if !hasUUID && !hasID {
+		if preferShortIDs {
+			task.AdditionalTags["id"] = utils.ShortEncodeUUID(id)
+		} else {
+			task.AdditionalTags["uuid"] = utils.LongEncodeUUID(id)
+		}
+	} else if hasUUID && !hasID && preferShortIDs {
+		// Has UUID but no ID, and we prefer short IDs
 		task.AdditionalTags["id"] = utils.ShortEncodeUUID(id)
 		delete(task.AdditionalTags, "uuid")
-	} else {
-		task.AdditionalTags["uuid"] = utils.LongEncodeUUID(id)
-		delete(task.AdditionalTags, "id")
+	} else if hasID && !hasUUID && !preferShortIDs {
+		// Has ID but no UUID, and we don't prefer short IDs
+		// Only convert to UUID if the ID is actually a UUID
+		if utils.IsUUID(task.AdditionalTags["id"]) {
+			task.AdditionalTags["uuid"] = utils.LongEncodeUUID(id)
+			delete(task.AdditionalTags, "id")
+		} else {
+			// ID is not a UUID, so add a UUID tag
+			task.AdditionalTags["uuid"] = utils.LongEncodeUUID(id)
+		}
 	}
 
 	return id
