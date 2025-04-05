@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"t5.mkbrechtel.dev/cmd"
+	"t5.mkbrechtel.dev/cli"
 )
 
 // TestTodoUpdate tests the 'todo update' command ensures proper task properties
@@ -257,7 +257,7 @@ func TestAddMultipleTasksViaStdin(t *testing.T) {
 	mockStderr := NewMockOutput()
 	
 	fullArgs := []string{"t5", "--config", configFile, "add", "todo"}
-	err = cmd.Execute(fullArgs, stdin, stdout, mockStderr)
+	err = cli.Execute(fullArgs, stdin, stdout, mockStderr)
 	require.NoError(t, err, "Command should execute successfully")
 
 	// Read the updated todo.txt file

@@ -12,7 +12,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"t5.mkbrechtel.dev/cmd"
+	"t5.mkbrechtel.dev/cli"
 )
 
 // Task represents a todo.txt task for testing purposes
@@ -178,7 +178,7 @@ func runT5Command(t *testing.T, args ...string) (string, string, error) {
 
 	// Execute the command with our captured output
 	// Using nil for stdin as tests don't need to read from stdin
-	err := cmd.Execute(fullArgs, stdin, stdout, stderr)
+	err := cli.Execute(fullArgs, stdin, stdout, stderr)
 
 	// Wait a moment to ensure file operations complete
 	// This helps with event store file creation and visibility

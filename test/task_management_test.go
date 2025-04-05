@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"t5.mkbrechtel.dev/cmd"
+	"t5.mkbrechtel.dev/cli"
 	"t5.mkbrechtel.dev/core"
 )
 
@@ -125,7 +125,7 @@ func TestFilteredList(t *testing.T) {
 			// instead we'll focus on testing the filter functionality directly with the repository
 			
 			// Set up a test repository with the current event store
-			appCtx := cmd.GetAppContextForTesting()
+			appCtx := cli.GetAppContextForTesting()
 			appCtx.Config.EventStoreFile = eventStoreFile
 			require.NoError(t, appCtx.InitRepository(), "Should initialize repository")
 			
@@ -220,7 +220,7 @@ func TestBooleanCombinators(t *testing.T) {
 	}
 	
 	// Now we'll test the boolean combinators directly using our repository code
-	appCtx := cmd.GetAppContextForTesting()
+	appCtx := cli.GetAppContextForTesting()
 	appCtx.Config.EventStoreFile = eventStoreFile
 	err = appCtx.InitRepository()
 	require.NoError(t, err, "Should initialize repository")
