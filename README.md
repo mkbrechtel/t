@@ -134,7 +134,7 @@ See the complete [Data Model Documentation](docs/design/data-model.md) for more 
    - [ ] Add `t5 pause` and `t5 resume` commands
 
 - [ ] **Time Budget Management**
-   - [ ] Implement `t5 budget set [project] [budget]` command
+   - [ ] Implement `t5 set budget [project] [budget]` command
    - [ ] Implement budget usage tracking
    - [ ] Add time budget reporting
 
