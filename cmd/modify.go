@@ -66,8 +66,11 @@ func ModifyTask(ctx *AppContext, taskID string) {
 		log.Fatalf("Failed to get task: %v", err)
 	}
 	
+	// Build modifiers based on flags
+	modifiers := buildModifiers(modifierFlags)
+	
 	// Apply modifications
-	modified := applyModifications(task, modifierFlags)
+	modified := core.ApplyModifiers(task, modifiers)
 	
 	// Update the task
 	err = ctx.Repository.UpdateTask(modified)
@@ -144,147 +147,88 @@ func parseModifierFlags(ctx *AppContext) TaskModifierFlags {
 	return modifierFlags
 }
 
-// applyModifications applies the requested modifications to a task
-func applyModifications(task core.Task, flags TaskModifierFlags) core.Task {
+// buildModifiers creates task modifiers based on flag values
+func buildModifiers(flags TaskModifierFlags) []core.TaskModifier {
+	var modifiers []core.TaskModifier
+	
 	// Handle completion status
 	if flags.Complete {
-		task.Completed = true
-		task.CompletedDate = time.Now()
+		modifiers = append(modifiers, core.CompletionModifier{Completed: true})
 	} else if flags.Uncomplete {
-		task.Completed = false
-		task.CompletedDate = time.Time{}
+		modifiers = append(modifiers, core.CompletionModifier{Completed: false})
 	}
 	
 	// Handle priority
-	if flags.RemovePriority {
-		task.Priority = ""
-	} else if flags.Priority != "" {
-		task.Priority = strings.ToUpper(flags.Priority)
+	if flags.RemovePriority || flags.Priority != "" {
+		modifiers = append(modifiers, core.PriorityModifier{
+			Priority:       flags.Priority,
+			RemovePriority: flags.RemovePriority,
+		})
 	}
 	
 	// Handle projects
-	if flags.AddProject != "" {
-		projects := strings.Split(flags.AddProject, ",")
-		for _, project := range projects {
-			project = strings.TrimSpace(project)
-			if project == "" {
-				continue
-			}
-			
-			// Remove leading + if present
-			if strings.HasPrefix(project, "+") {
-				project = project[1:]
-			}
-			
-			// Check if project already exists
-			exists := false
-			for _, p := range task.Projects {
-				if p == project {
-					exists = true
-					break
-				}
-			}
-			
-			if !exists {
-				task.Projects = append(task.Projects, project)
-			}
+	if flags.AddProject != "" || flags.RemoveProject != "" {
+		var addProjects []string
+		var removeProjects []string
+		
+		if flags.AddProject != "" {
+			addProjects = strings.Split(flags.AddProject, ",")
 		}
-	}
-	
-	if flags.RemoveProject != "" {
-		projects := strings.Split(flags.RemoveProject, ",")
-		for _, project := range projects {
-			project = strings.TrimSpace(project)
-			if project == "" {
-				continue
-			}
-			
-			// Remove leading + if present
-			if strings.HasPrefix(project, "+") {
-				project = project[1:]
-			}
-			
-			// Remove project from list
-			for i, p := range task.Projects {
-				if p == project {
-					task.Projects = append(task.Projects[:i], task.Projects[i+1:]...)
-					break
-				}
-			}
+		
+		if flags.RemoveProject != "" {
+			removeProjects = strings.Split(flags.RemoveProject, ",")
 		}
+		
+		modifiers = append(modifiers, core.ProjectModifier{
+			AddProjects:    addProjects,
+			RemoveProjects: removeProjects,
+		})
 	}
 	
 	// Handle contexts
-	if flags.AddContext != "" {
-		contexts := strings.Split(flags.AddContext, ",")
-		for _, context := range contexts {
-			context = strings.TrimSpace(context)
-			if context == "" {
-				continue
-			}
-			
-			// Remove leading @ if present
-			if strings.HasPrefix(context, "@") {
-				context = context[1:]
-			}
-			
-			// Check if context already exists
-			exists := false
-			for _, c := range task.Contexts {
-				if c == context {
-					exists = true
-					break
-				}
-			}
-			
-			if !exists {
-				task.Contexts = append(task.Contexts, context)
-			}
+	if flags.AddContext != "" || flags.RemoveContext != "" {
+		var addContexts []string
+		var removeContexts []string
+		
+		if flags.AddContext != "" {
+			addContexts = strings.Split(flags.AddContext, ",")
 		}
-	}
-	
-	if flags.RemoveContext != "" {
-		contexts := strings.Split(flags.RemoveContext, ",")
-		for _, context := range contexts {
-			context = strings.TrimSpace(context)
-			if context == "" {
-				continue
-			}
-			
-			// Remove leading @ if present
-			if strings.HasPrefix(context, "@") {
-				context = context[1:]
-			}
-			
-			// Remove context from list
-			for i, c := range task.Contexts {
-				if c == context {
-					task.Contexts = append(task.Contexts[:i], task.Contexts[i+1:]...)
-					break
-				}
-			}
+		
+		if flags.RemoveContext != "" {
+			removeContexts = strings.Split(flags.RemoveContext, ",")
 		}
+		
+		modifiers = append(modifiers, core.ContextModifier{
+			AddContexts:    addContexts,
+			RemoveContexts: removeContexts,
+		})
 	}
 	
 	// Handle due date
-	if flags.RemoveDue {
-		task.DueDate = time.Time{}
-	} else if flags.Due != "" {
-		if date, err := time.Parse("2006-01-02", flags.Due); err == nil {
-			task.DueDate = date
-		} else {
-			log.Printf("Warning: Invalid date format for due: %s", flags.Due)
+	if flags.RemoveDue || flags.Due != "" {
+		var dueDate *time.Time
+		
+		if flags.Due != "" {
+			if date, err := time.Parse("2006-01-02", flags.Due); err == nil {
+				dueDate = &date
+			} else {
+				log.Printf("Warning: Invalid date format for due: %s", flags.Due)
+			}
 		}
+		
+		modifiers = append(modifiers, core.DueDateModifier{
+			DueDate:      dueDate,
+			RemoveDueDate: flags.RemoveDue,
+		})
 	}
 	
 	// Handle text modifications
-	if flags.Append != "" {
-		task.Todo = task.Todo + " " + flags.Append
+	if flags.Append != "" || flags.Prepend != "" {
+		modifiers = append(modifiers, core.TextModifier{
+			AppendText:  flags.Append,
+			PrependText: flags.Prepend,
+		})
 	}
 	
-	if flags.Prepend != "" {
-		task.Todo = flags.Prepend + " " + task.Todo
-	}
-	
-	return task
+	return modifiers
 }

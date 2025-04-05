@@ -124,11 +124,20 @@ func buildFilters(flags TaskFilterFlags) []core.TaskFilter {
 	// Priority filter
 	if flags.Priority != "" {
 		priorities := strings.Split(flags.Priority, ",")
+		priorityFilters := make([]core.TaskFilter, 0, len(priorities))
+		
 		for _, p := range priorities {
 			p = strings.TrimSpace(p)
 			if p != "" {
-				filters = append(filters, core.PriorityFilter{Priority: p})
+				priorityFilters = append(priorityFilters, core.PriorityFilter{Priority: p})
 			}
+		}
+		
+		// If we have multiple priorities, use OR filter to match any of them
+		if len(priorityFilters) > 1 {
+			filters = append(filters, core.OrFilter{Filters: priorityFilters})
+		} else if len(priorityFilters) == 1 {
+			filters = append(filters, priorityFilters[0])
 		}
 	}
 	
@@ -185,6 +194,11 @@ func buildFilters(flags TaskFilterFlags) []core.TaskFilter {
 	// Regex filter
 	if flags.Regex != "" {
 		filters = append(filters, core.RegexFilter{Pattern: flags.Regex})
+	}
+	
+	// If we have multiple filters, wrap them in an AND filter
+	if len(filters) > 1 {
+		return []core.TaskFilter{core.AndFilter{Filters: filters}}
 	}
 	
 	return filters
