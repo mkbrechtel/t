@@ -8,6 +8,7 @@ import (
 )
 
 // SyncTasks synchronizes tasks between the todo.txt file and the event store
+// Follows the t5 sync todo [file] pattern
 func SyncTasks(ctx *AppContext) {
     // Sync with the specified todo.txt file
     result, err := todo.SyncWithRepository(ctx.Repository, ctx.Config.TodoFile)

@@ -12,6 +12,7 @@ import (
 )
 
 // AddTask creates a new task from command line or stdin
+// Follows the t5 add todo [task text] pattern
 func AddTask(ctx *AppContext, taskText string, stdin io.ReadCloser) {
 	// Read existing tasks from todo.txt file
 	taskList, err := todo.ReadTodoFile(ctx.Config.TodoFile)

@@ -28,6 +28,7 @@ type TaskModifierFlags struct {
 }
 
 // ModifyTask applies modifications to a task identified by ID
+// Follows the t5 modify <task-id> pattern where task-id is a direct object
 func ModifyTask(ctx *AppContext, taskID string) {
 	// Parse modifier flags
 	modifierFlags := parseModifierFlags(ctx)

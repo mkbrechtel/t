@@ -24,6 +24,7 @@ type TaskFilterFlags struct {
 }
 
 // ListTasks lists tasks from the event store with optional filters
+// Follows the t5 list todo pattern
 func ListTasks(ctx *AppContext) {
 	// Create filter flags
 	filterFlags := parseFilterFlags(ctx)

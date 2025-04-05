@@ -27,12 +27,12 @@ func Execute(args []string, stdin io.ReadCloser, stdout, stderr io.WriteCloser) 
 		fmt.Fprintf(stderr, "Usage: t5 [flags] <command> [arguments]\n\n")
 		fmt.Fprintf(stderr, "t5 is a todo list and time tracker tool\n\n")
 		fmt.Fprintf(stderr, "Commands:\n")
-		fmt.Fprintf(stderr, "  list                List tasks from the event store\n")
-		fmt.Fprintf(stderr, "  add [task text]     Add a new task (reads from stdin if no text provided)\n")
-		fmt.Fprintf(stderr, "  modify <task-id>    Modify an existing task with various flags\n")
-		fmt.Fprintf(stderr, "  update [file]       Update and ensure properties of tasks in your todo list\n")
-		fmt.Fprintf(stderr, "  sync [file]         Sync tasks with a todo.txt file\n")
-		fmt.Fprintf(stderr, "  config              Show the current configuration\n")
+		fmt.Fprintf(stderr, "  list todo            List tasks from the event store\n")
+		fmt.Fprintf(stderr, "  add todo [task text] Add a new task (reads from stdin if no text provided)\n")
+		fmt.Fprintf(stderr, "  modify <task-id>     Modify an existing task with various flags\n")
+		fmt.Fprintf(stderr, "  update todo [file]   Update and ensure properties of tasks in your todo list\n")
+		fmt.Fprintf(stderr, "  sync todo [file]     Sync tasks with a todo.txt file\n")
+		fmt.Fprintf(stderr, "  config               Show the current configuration\n")
 		fmt.Fprintf(stderr, "\nFilter flags for list command:\n")
 		fmt.Fprintf(stderr, "  --completed         Show only completed tasks\n")
 		fmt.Fprintf(stderr, "  --not-completed     Show only non-completed tasks\n")
@@ -88,15 +88,25 @@ func Execute(args []string, stdin io.ReadCloser, stdout, stderr io.WriteCloser) 
 
 	switch command {
 	case "list":
-		ListTasks(ctx)
-	case "add":
-		if len(cmdArgs) > 1 {
-			// The rest of the arguments form the task text
-			taskText := strings.Join(cmdArgs[1:], " ")
-			AddTask(ctx, taskText, stdin)
+		if len(cmdArgs) > 1 && cmdArgs[1] == "todo" {
+			ListTasks(ctx)
 		} else {
-			// Read from stdin if no arguments provided
-			AddTask(ctx, "", stdin)
+			fmt.Fprintf(stderr, "Error: Command 'list' requires 'todo' as the object\n")
+			return fmt.Errorf("command 'list' requires 'todo' as the object")
+		}
+	case "add":
+		if len(cmdArgs) > 1 && cmdArgs[1] == "todo" {
+			if len(cmdArgs) > 2 {
+				// The rest of the arguments form the task text
+				taskText := strings.Join(cmdArgs[2:], " ")
+				AddTask(ctx, taskText, stdin)
+			} else {
+				// Read from stdin if no arguments provided
+				AddTask(ctx, "", stdin)
+			}
+		} else {
+			fmt.Fprintf(stderr, "Error: Command 'add' requires 'todo' as the object\n")
+			return fmt.Errorf("command 'add' requires 'todo' as the object")
 		}
 	case "modify":
 		if len(cmdArgs) > 1 {
@@ -108,11 +118,16 @@ func Execute(args []string, stdin io.ReadCloser, stdout, stderr io.WriteCloser) 
 			return fmt.Errorf("task ID required for modify command")
 		}
 	case "update":
-		// Check if a specific file was specified
-		if len(cmdArgs) > 1 {
-			ctx.Config.TodoFile = cmdArgs[1]
+		if len(cmdArgs) > 1 && cmdArgs[1] == "todo" {
+			// Check if a specific file was specified
+			if len(cmdArgs) > 2 {
+				ctx.Config.TodoFile = cmdArgs[2]
+			}
+			UpdateTasks(ctx)
+		} else {
+			fmt.Fprintf(stderr, "Error: Command 'update' requires 'todo' as the object\n")
+			return fmt.Errorf("command 'update' requires 'todo' as the object")
 		}
-		UpdateTasks(ctx)
 	case "todo":
 		// If there's a subcommand
 		if len(cmdArgs) > 1 {
@@ -153,11 +168,16 @@ func Execute(args []string, stdin io.ReadCloser, stdout, stderr io.WriteCloser) 
 			UpdateTasks(ctx)
 		}
 	case "sync":
-		// Check if a specific file was specified
-		if len(cmdArgs) > 1 {
-			ctx.Config.TodoFile = cmdArgs[1]
+		if len(cmdArgs) > 1 && cmdArgs[1] == "todo" {
+			// Check if a specific file was specified
+			if len(cmdArgs) > 2 {
+				ctx.Config.TodoFile = cmdArgs[2]
+			}
+			SyncTasks(ctx)
+		} else {
+			fmt.Fprintf(stderr, "Error: Command 'sync' requires 'todo' as the object\n")
+			return fmt.Errorf("command 'sync' requires 'todo' as the object")
 		}
-		SyncTasks(ctx)
 	case "config":
 		ctx.ShowConfig()
 	default:
