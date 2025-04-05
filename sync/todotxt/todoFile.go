@@ -58,3 +58,12 @@ func GetTodoFileContent(taskList todo.TaskList) (string, error) {
 	}
 	return strings.Join(lines, "\n"), nil
 }
+
+// ParseTask parses a single todo.txt task line
+func ParseTask(taskLine string) (*todo.Task, error) {
+	task, err := todo.ParseTask(taskLine)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse task: %w", err)
+	}
+	return task, nil
+}

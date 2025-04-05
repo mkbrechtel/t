@@ -16,8 +16,10 @@ t5 help
 Available commands:
 
 * `t5 list` - List all tasks with their priorities and metadata
+* `t5 add [task text]` - Add a new task directly from command line
+* `t5 modify <task-id>` - Modify an existing task with various flags
 * `t5 update [file]` - Update and ensure properties of tasks (IDs, dates)
-* `t5 todo [update [file]]` - Alias for update command
+* `t5 todo [update|add|modify] [args]` - Todo command with subcommands
 * `t5 sync [file]` - Synchronize tasks between todo.txt and event store
 * `t5 config` - Display current configuration settings
 
@@ -28,6 +30,32 @@ Common flags:
 * `--prefer-short-ids` - Use short form IDs
 * `--enforce-creation-date` - Ensure tasks have creation dates
 * `--enforce-completion-date` - Ensure completed tasks have completion dates
+
+Filter flags for list command:
+* `--completed` - Show only completed tasks
+* `--not-completed` - Show only non-completed tasks
+* `--priority=A` - Filter by priority A (can use A,B,C for multiple)
+* `--project=Home` - Filter tasks with +Home project
+* `--context=@phone` - Filter tasks with @phone context
+* `--due-today` - Filter tasks due today
+* `--due-before=DATE` - Filter tasks due before DATE (YYYY-MM-DD)
+* `--created-after=DATE` - Filter tasks created after DATE (YYYY-MM-DD)
+* `--has-tag=tag_name` - Filter tasks with specific tag
+* `--regex=PATTERN` - Filter tasks using a regular expression
+
+Modifier flags for modify command:
+* `--complete` - Mark task as complete
+* `--uncomplete` - Mark task as incomplete
+* `--priority=A` - Set priority to A
+* `--remove-priority` - Remove priority
+* `--add-project=Home` - Add +Home project to task
+* `--remove-project=Home` - Remove +Home project from task
+* `--add-context=phone` - Add @phone context to task
+* `--remove-context=phone` - Remove @phone context from task
+* `--due=DATE` - Set due date (YYYY-MM-DD)
+* `--remove-due` - Remove due date
+* `--append=TEXT` - Append text to task
+* `--prepend=TEXT` - Prepend text to task
 
 ## Build
 
@@ -107,24 +135,24 @@ See the complete [Data Model Documentation](docs/design/data-model.md) for more 
 
 ## Feature Implementation Plan
 
-### Phase 1: Core Task Management Enhancements
+### Phase 1: Core Task Management Enhancements ✅
 
-- [ ] **Task Command Improvements**
-   - [ ] Implement `t5 add todo` to add tasks directly from command line
-   - [ ] Support stdin input for task creation
-   - [ ] Expand task filtering capabilities based on todo.txt properties
-   - [ ] Implement regex-based filters
-   - [ ] Add boolean combinators for filters (AND, OR, NOT)
+- [x] **Task Command Improvements**
+   - [x] Implement `t5 add todo` to add tasks directly from command line
+   - [x] Support stdin input for task creation
+   - [x] Expand task filtering capabilities based on todo.txt properties
+   - [x] Implement regex-based filters
+   - [x] Add boolean combinators for filters (AND, OR, NOT)
 
-- [ ] **Task Priority Management**
-   - [ ] Implement priority assignment/reassignment
-   - [ ] Implement priority-based sorting for display
-   - [ ] Add priority filtering in task listings
+- [x] **Task Priority Management**
+   - [x] Implement priority assignment/reassignment
+   - [x] Implement priority-based sorting for display
+   - [x] Add priority filtering in task listings
 
-- [ ] **Task Modification Commands**
-   - [ ] Add commands to modify existing tasks
-   - [ ] Implement project/context addition/removal
-   - [ ] Add bulk task modification options
+- [x] **Task Modification Commands**
+   - [x] Add commands to modify existing tasks
+   - [x] Implement project/context addition/removal
+   - [x] Add bulk task modification options
 
 ### Phase 2: Time Tracking and Activity Management
 
@@ -197,10 +225,10 @@ See the complete [Data Model Documentation](docs/design/data-model.md) for more 
 
 ## Implementation Milestones
 
-### Milestone 1: Complete Core Task Management (1-2 weeks)
-- [ ] Full task CRUD operations
-- [ ] Comprehensive filtering system
-- [ ] Improved command line experience
+### Milestone 1: Complete Core Task Management (1-2 weeks) ✅
+- [x] Full task CRUD operations
+- [x] Comprehensive filtering system
+- [x] Improved command line experience
 
 ### Milestone 2: Time Tracking System (2-3 weeks)
 - [ ] Working activity tracking
@@ -224,20 +252,20 @@ See the complete [Data Model Documentation](docs/design/data-model.md) for more 
 
 ## Immediate Next Steps
 
-- [ ] **Implement Task Command Enhancements**
-   - [ ] Add support for adding tasks from command line
-   - [ ] Implement stdin task creation
-   - [ ] Create basic task modification commands
+- [x] **Implement Task Command Enhancements**
+   - [x] Add support for adding tasks from command line
+   - [x] Implement stdin task creation
+   - [x] Create basic task modification commands
 
 - [ ] **Complete Time Tracking Logic**
    - [ ] Implement the `apply()` method for `TaskStartTime` and `TaskEndTime` events
    - [ ] Create task duration calculations
    - [ ] Add start/pause/resume commands
 
-- [ ] **Enhance Task Filtering**
-   - [ ] Implement todo.txt property filters
-   - [ ] Add regex filter support
-   - [ ] Create boolean combinators for complex filters
+- [x] **Enhance Task Filtering**
+   - [x] Implement todo.txt property filters
+   - [x] Add regex filter support
+   - [x] Create boolean combinators for complex filters
 
 - [ ] **Improve Task Listing Display**
    - [ ] Add formatted output options
