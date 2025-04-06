@@ -170,6 +170,7 @@ func ShowStatus(ctx *AppContext, args []string) {
 		fmt.Printf("Active task: %s\n", task.Todo)
 		fmt.Printf("Running for: %s\n", formatDuration(runningTime))
 		fmt.Printf("Time today: %s\n", formatDuration(todayTimeSpent+runningTime)) // Add current session
+		fmt.Printf("Total time: %s\n", formatDuration(task.UsedTime+runningTime)) // Add current session to total used time
 		fmt.Printf("Started at: %s\n", state.ActiveTask.StartTime.Format("2006-01-02 15:04:05"))
 	} else {
 		// Paused
@@ -178,6 +179,7 @@ func ShowStatus(ctx *AppContext, args []string) {
 		fmt.Printf("Paused task: %s\n", task.Todo)
 		fmt.Printf("Active time: %s\n", formatDuration(runningTime))
 		fmt.Printf("Time today: %s\n", formatDuration(todayTimeSpent+runningTime)) // Add current session
+		fmt.Printf("Total time: %s\n", formatDuration(task.UsedTime+runningTime)) // Add current session to total used time
 		fmt.Printf("Paused for: %s\n", formatDuration(pausedTime))
 		fmt.Printf("Started at: %s\n", state.ActiveTask.StartTime.Format("2006-01-02 15:04:05"))
 	}
