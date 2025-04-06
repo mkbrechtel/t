@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/gofrs/uuid/v5"
-	"t5.mkbrechtel.dev/utils"
+	"t5.mkbrechtel.dev/t5/utils"
 )
 
 // Repository is an implementation of event storage and state management

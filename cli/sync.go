@@ -4,7 +4,7 @@ import (
     "fmt"
     "log"
     
-    todo "t5.mkbrechtel.dev/sync/todotxt"
+    todo "t5.mkbrechtel.dev/t5/sync/todotxt"
 )
 
 // SyncTasks synchronizes tasks between the todo.txt file and the event store

@@ -6,7 +6,7 @@ import (
 
 	uuid "github.com/gofrs/uuid/v5"
 	todo "github.com/1set/todotxt"
-	"t5.mkbrechtel.dev/utils"
+	"t5.mkbrechtel.dev/t5/utils"
 )
 
 type Task struct {

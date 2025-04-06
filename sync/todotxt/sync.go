@@ -7,8 +7,8 @@ import (
 	
 	todo "github.com/1set/todotxt"
 	
-	"t5.mkbrechtel.dev/core"
-	"t5.mkbrechtel.dev/utils"
+	"t5.mkbrechtel.dev/t5/core"
+	"t5.mkbrechtel.dev/t5/utils"
 )
 
 // SyncResult contains statistics about the sync operation

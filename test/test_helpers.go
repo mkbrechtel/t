@@ -12,7 +12,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"t5.mkbrechtel.dev/cli"
+	"t5.mkbrechtel.dev/t5/cli"
 )
 
 // Task represents a todo.txt task for testing purposes

@@ -3,8 +3,8 @@ package cli
 import (
 	"log"
 
-	"t5.mkbrechtel.dev/core"
-	todo "t5.mkbrechtel.dev/sync/todotxt"
+	"t5.mkbrechtel.dev/t5/core"
+	todo "t5.mkbrechtel.dev/t5/sync/todotxt"
 )
 
 // UpdateTasks updates and ensures properties of tasks in your todo list

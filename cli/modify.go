@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
-	"t5.mkbrechtel.dev/core"
-	todo "t5.mkbrechtel.dev/sync/todotxt"
+	"t5.mkbrechtel.dev/t5/core"
+	todo "t5.mkbrechtel.dev/t5/sync/todotxt"
 )
 
 // TaskModifierFlags holds flag values for modifying tasks

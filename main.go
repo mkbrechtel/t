@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 	
-	"t5.mkbrechtel.dev/cli"
+	"t5.mkbrechtel.dev/t5/cli"
 )
 
 func main() {

@@ -7,8 +7,8 @@ import (
 	"log"
 	"strings"
 
-	"t5.mkbrechtel.dev/core"
-	todo "t5.mkbrechtel.dev/sync/todotxt"
+	"t5.mkbrechtel.dev/t5/core"
+	todo "t5.mkbrechtel.dev/t5/sync/todotxt"
 )
 
 // AddTask creates a new task from command line or stdin

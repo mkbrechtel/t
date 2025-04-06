@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 	
-	"t5.mkbrechtel.dev/core"
+	"t5.mkbrechtel.dev/t5/core"
 )
 
 // TaskFilterFlags holds flag values for filtering tasks

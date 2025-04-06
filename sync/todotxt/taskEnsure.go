@@ -3,7 +3,7 @@ package todo
 import (
 	"time"
 	todo "github.com/1set/todotxt"
-	"t5.mkbrechtel.dev/utils"
+	"t5.mkbrechtel.dev/t5/utils"
 	uuidv7 "github.com/gofrs/uuid/v5"
 )
 

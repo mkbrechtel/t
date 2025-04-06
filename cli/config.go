@@ -8,7 +8,7 @@ import (
 	
 	"github.com/adrg/xdg"
 	yaml "gopkg.in/yaml.v2"
-	"t5.mkbrechtel.dev/core"
+	"t5.mkbrechtel.dev/t5/core"
 )
 
 // AppConfig holds all configuration settings

@@ -9,8 +9,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"t5.mkbrechtel.dev/cli"
-	"t5.mkbrechtel.dev/core"
+	"t5.mkbrechtel.dev/t5/cli"
+	"t5.mkbrechtel.dev/t5/core"
 )
 
 // TestAddCommand tests the 'add' command for creating new tasks
