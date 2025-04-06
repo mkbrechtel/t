@@ -135,10 +135,10 @@ func TestFilteredList(t *testing.T) {
 			for _, flag := range tc.filterFlags {
 				if flag == "--completed" {
 					completed := true
-					filters = append(filters, core.CompletionFilter{Completed: &completed})
+					filters = append(filters, core.CompletionFilter{Completed: &completed, UseFlag: true})
 				} else if flag == "--not-completed" {
 					completed := false
-					filters = append(filters, core.CompletionFilter{Completed: &completed})
+					filters = append(filters, core.CompletionFilter{Completed: &completed, NotFlag: true})
 				} else if strings.HasPrefix(flag, "--context=") {
 					context := strings.TrimPrefix(flag, "--context=")
 					filters = append(filters, core.ContextFilter{Contexts: []string{context}})
@@ -227,7 +227,7 @@ func TestBooleanCombinators(t *testing.T) {
 	
 	// Create test filters
 	projectFilter := core.ProjectFilter{Projects: []string{"testproject"}}
-	priorityFilter := core.PriorityFilter{Priority: "A"}
+	priorityFilter := core.PriorityFilter{Priorities: []string{"A"}}
 	contextFilter := core.ContextFilter{Contexts: []string{"testcontext"}}
 	
 	// Test AND filter

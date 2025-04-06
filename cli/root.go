@@ -18,6 +18,7 @@ func Execute(args []string, stdin io.ReadCloser, stdout, stderr io.WriteCloser) 
 	// Setup custom flag set for parsing the given args
 	fs := flag.NewFlagSet("t5", flag.ExitOnError)
 	ctx.FlagSet = fs
+	ctx.OriginalArgs = args
 
 	// Setup flags on our custom FlagSet
 	ctx.SetupFlags()

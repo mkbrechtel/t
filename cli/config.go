@@ -38,6 +38,7 @@ type AppContext struct {
 	Config *AppConfig
 	Repository *core.Repository
 	FlagSet *flag.FlagSet
+	OriginalArgs []string // Original command line arguments
 }
 
 // NewAppContext creates a new application context with default config
