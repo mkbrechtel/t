@@ -19,7 +19,7 @@ func TestAddCommand(t *testing.T) {
 	defer cleanup()
 
 	// Initialize the event store
-	_, stderr, err := runT5Command(t, "--config", configFile, "todo", "update")
+	_, stderr, err := runT5Command(t, "--config", configFile, "update")
 	if err != nil {
 		t.Fatalf("Update command failed: %v\nStderr: %s", err, stderr)
 	}
@@ -32,7 +32,7 @@ func TestAddCommand(t *testing.T) {
 	originalCount := len(originalTasks)
 	
 	// Run the add command with a new task
-	_, stderr, err = runT5Command(t, "--config", configFile, "add", "todo", "(A) New test task +project @context")
+	_, stderr, err = runT5Command(t, "--config", configFile, "add", "(A) New test task +project @context")
 	if err != nil {
 		t.Fatalf("Add command failed: %v\nStderr: %s", err, stderr)
 	}
@@ -81,7 +81,7 @@ func TestFilteredList(t *testing.T) {
 	defer cleanup()
 
 	// Initialize the event store
-	_, stderr, err := runT5Command(t, "--config", configFile, "todo", "update")
+	_, stderr, err := runT5Command(t, "--config", configFile, "update")
 	if err != nil {
 		t.Fatalf("Update command failed: %v\nStderr: %s", err, stderr)
 	}
@@ -196,7 +196,7 @@ func TestBooleanCombinators(t *testing.T) {
 	defer cleanup()
 
 	// Initialize the event store
-	_, stderr, err := runT5Command(t, "--config", configFile, "todo", "update")
+	_, stderr, err := runT5Command(t, "--config", configFile, "update")
 	if err != nil {
 		t.Fatalf("Update command failed: %v\nStderr: %s", err, stderr)
 	}
@@ -214,7 +214,7 @@ func TestBooleanCombinators(t *testing.T) {
 	require.NoError(t, err, "Should be able to write to the todo.txt file")
 	
 	// Run update to process the new task
-	_, stderr, err = runT5Command(t, "--config", configFile, "todo", "update")
+	_, stderr, err = runT5Command(t, "--config", configFile, "update")
 	if err != nil {
 		t.Fatalf("Update command failed: %v\nStderr: %s", err, stderr)
 	}

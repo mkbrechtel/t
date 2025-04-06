@@ -27,15 +27,15 @@ func Execute(args []string, stdin io.ReadCloser, stdout, stderr io.WriteCloser) 
 		fmt.Fprintf(stderr, "Usage: t5 [flags] <command> [arguments]\n\n")
 		fmt.Fprintf(stderr, "t5 is a todo list and time tracker tool\n\n")
 		fmt.Fprintf(stderr, "Commands:\n")
-		fmt.Fprintf(stderr, "  list todo {filter flags}             List tasks from the event store\n")
-		fmt.Fprintf(stderr, "  add todo [task text]                 Add a new task (reads from stdin if no text provided)\n")
+		fmt.Fprintf(stderr, "  list {filter flags}                  List tasks from the event store\n")
+		fmt.Fprintf(stderr, "  add [task text]                      Add a new task (reads from stdin if no text provided)\n")
 		fmt.Fprintf(stderr, "  modify <task-id> {modifier flags}    Modify an existing task with various flags\n")
-		fmt.Fprintf(stderr, "  update todo [file]                   Update and ensure properties of tasks in your todo list\n")
-		fmt.Fprintf(stderr, "  sync todo [file]                     Sync tasks with a todo.txt file\n")
+		fmt.Fprintf(stderr, "  update [file]                        Update and ensure properties of tasks in your todo list\n")
+		fmt.Fprintf(stderr, "  sync [file]                          Sync tasks with a todo.txt file\n")
 		fmt.Fprintf(stderr, "  config                               Show the current configuration\n")
-		fmt.Fprintf(stderr, "  start <task-id> [--note \"text\"]       Start time tracking for a task\n")
-		fmt.Fprintf(stderr, "  stop [--note \"text\"]                  Stop time tracking for the active task\n")
-		fmt.Fprintf(stderr, "  pause [--reason \"text\"]               Pause time tracking for the active task\n")
+		fmt.Fprintf(stderr, "  start <task-id> [--note \"text\"]      Start time tracking for a task\n")
+		fmt.Fprintf(stderr, "  stop [--note \"text\"]                 Stop time tracking for the active task\n")
+		fmt.Fprintf(stderr, "  pause [--reason \"text\"]              Pause time tracking for the active task\n")
 		fmt.Fprintf(stderr, "  resume                               Resume time tracking for the paused task\n")
 		fmt.Fprintf(stderr, "  status                               Show the current time tracking status\n")
 		fmt.Fprintf(stderr, "  budget set <project> <duration>      Set a time budget for a project\n")
@@ -97,27 +97,16 @@ func Execute(args []string, stdin io.ReadCloser, stdout, stderr io.WriteCloser) 
 
 	switch command {
 	case "list":
-		if len(cmdArgs) > 1 && cmdArgs[1] == "todo" {
-			// Pass the remaining arguments to the list command
-			remainingArgs := cmdArgs[2:]
-			ListTasks(ctx, remainingArgs)
-		} else {
-			fmt.Fprintf(stderr, "Error: Command 'list' requires 'todo' as the object\n")
-			return fmt.Errorf("command 'list' requires 'todo' as the object")
-		}
+		// Pass all arguments to the list command
+		ListTasks(ctx, cmdArgs[1:])
 	case "add":
-		if len(cmdArgs) > 1 && cmdArgs[1] == "todo" {
-			if len(cmdArgs) > 2 {
-				// The rest of the arguments form the task text
-				taskText := strings.Join(cmdArgs[2:], " ")
-				AddTask(ctx, taskText, stdin)
-			} else {
-				// Read from stdin if no arguments provided
-				AddTask(ctx, "", stdin)
-			}
+		if len(cmdArgs) > 1 {
+			// The rest of the arguments form the task text
+			taskText := strings.Join(cmdArgs[1:], " ")
+			AddTask(ctx, taskText, stdin)
 		} else {
-			fmt.Fprintf(stderr, "Error: Command 'add' requires 'todo' as the object\n")
-			return fmt.Errorf("command 'add' requires 'todo' as the object")
+			// Read from stdin if no arguments provided
+			AddTask(ctx, "", stdin)
 		}
 	case "modify":
 		if len(cmdArgs) > 1 {
@@ -131,68 +120,18 @@ func Execute(args []string, stdin io.ReadCloser, stdout, stderr io.WriteCloser) 
 			return fmt.Errorf("task ID required for modify command")
 		}
 	case "update":
-		if len(cmdArgs) > 1 && cmdArgs[1] == "todo" {
-			// Check if a specific file was specified
-			if len(cmdArgs) > 2 {
-				ctx.Config.TodoFile = cmdArgs[2]
-			}
-			UpdateTasks(ctx)
-		} else {
-			fmt.Fprintf(stderr, "Error: Command 'update' requires 'todo' as the object\n")
-			return fmt.Errorf("command 'update' requires 'todo' as the object")
-		}
-	case "todo":
-		// If there's a subcommand
+		// Check if a specific file was specified
 		if len(cmdArgs) > 1 {
-			// Process the todo subcommand
-			subCommand := cmdArgs[1]
-			switch subCommand {
-			case "add":
-				if len(cmdArgs) > 2 {
-					// The rest of the arguments form the task text
-					taskText := strings.Join(cmdArgs[2:], " ")
-					AddTask(ctx, taskText, stdin)
-				} else {
-					// Read from stdin if no arguments provided
-					AddTask(ctx, "", stdin)
-				}
-			case "modify":
-				if len(cmdArgs) > 2 {
-					// Second argument is the task ID
-					taskID := cmdArgs[2]
-					// Pass the remaining arguments to the modify command
-					remainingArgs := cmdArgs[3:]
-					ModifyTask(ctx, taskID, remainingArgs)
-				} else {
-					fmt.Fprintf(stderr, "Error: Task ID required for modify command\n")
-					return fmt.Errorf("task ID required for modify command")
-				}
-			case "update":
-				// Check if a specific file was specified
-				if len(cmdArgs) > 2 {
-					ctx.Config.TodoFile = cmdArgs[2]
-				}
-				UpdateTasks(ctx)
-			default:
-				fmt.Fprintf(stderr, "Unknown todo subcommand: %s\n", subCommand)
-				fs.Usage()
-				return fmt.Errorf("unknown todo subcommand: %s", subCommand)
-			}
-		} else {
-			// Default behavior for 'todo' with no subcommand is to update
-			UpdateTasks(ctx)
+			ctx.Config.TodoFile = cmdArgs[1]
 		}
+		UpdateTasks(ctx)
+	// "todo" command has been removed in favor of direct commands
 	case "sync":
-		if len(cmdArgs) > 1 && cmdArgs[1] == "todo" {
-			// Check if a specific file was specified
-			if len(cmdArgs) > 2 {
-				ctx.Config.TodoFile = cmdArgs[2]
-			}
-			SyncTasks(ctx)
-		} else {
-			fmt.Fprintf(stderr, "Error: Command 'sync' requires 'todo' as the object\n")
-			return fmt.Errorf("command 'sync' requires 'todo' as the object")
+		// Check if a specific file was specified
+		if len(cmdArgs) > 1 {
+			ctx.Config.TodoFile = cmdArgs[1]
 		}
+		SyncTasks(ctx)
 	case "config":
 		ctx.ShowConfig()
 	case "start":

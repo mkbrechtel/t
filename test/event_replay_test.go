@@ -15,13 +15,13 @@ func TestEventReplay(t *testing.T) {
 	defer cleanup()
 
 	// Run update to initialize the event store
-	_, stderr, err := runT5Command(t, "--config", configFile, "todo", "update")
+	_, stderr, err := runT5Command(t, "--config", configFile, "update")
 	if err != nil {
 		t.Fatalf("Update command failed: %v\nStderr: %s", err, stderr)
 	}
 
 	// Run list command to verify initial state
-	_, stderr, err = runT5Command(t, "--config", configFile, "list", "todo")
+	_, stderr, err = runT5Command(t, "--config", configFile, "list")
 	if err != nil {
 		t.Fatalf("List command failed: %v\nStderr: %s", err, stderr)
 	}
@@ -42,7 +42,7 @@ func TestEventReplay(t *testing.T) {
 	require.NoError(t, err, "Should be able to write to the todo.txt file")
 
 	// Run update again to create a new event
-	_, stderr, err = runT5Command(t, "--config", configFile, "todo", "update")
+	_, stderr, err = runT5Command(t, "--config", configFile, "update")
 	if err != nil {
 		t.Fatalf("Update command failed: %v\nStderr: %s", err, stderr)
 	}
@@ -52,7 +52,7 @@ func TestEventReplay(t *testing.T) {
 	assert.Equal(t, 2, updatedEventCount, "Should have two events after second update")
 
 	// List the tasks again to verify the new task was added
-	_, stderr, err = runT5Command(t, "--config", configFile, "list", "todo")
+	_, stderr, err = runT5Command(t, "--config", configFile, "list")
 	if err != nil {
 		t.Fatalf("List command failed: %v\nStderr: %s", err, stderr)
 	}

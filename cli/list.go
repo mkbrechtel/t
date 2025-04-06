@@ -9,7 +9,7 @@ import (
 )
 
 // ListTasks lists tasks from the event store with optional filters
-// Follows the t5 list todo pattern
+// Follows the t5 list pattern
 func ListTasks(ctx *AppContext, args []string) {
 	// Create a dedicated FlagSet for list command
 	fs := flag.NewFlagSet("list", flag.ExitOnError)

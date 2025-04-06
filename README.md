@@ -19,7 +19,6 @@ Available commands:
 * `t5 add [task text]` - Add a new task directly from command line
 * `t5 modify <task-id>` - Modify an existing task with various flags
 * `t5 update [file]` - Update and ensure properties of tasks (IDs, dates)
-* `t5 todo [update|add|modify] [args]` - Todo command with subcommands
 * `t5 sync [file]` - Synchronize tasks between todo.txt and event store
 * `t5 config` - Display current configuration settings
 * `t5 start <task-id>` - Start time tracking for a task

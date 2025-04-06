@@ -23,8 +23,8 @@ func TestTodoUpdate(t *testing.T) {
 	// Count tasks before update
 	originalTasks := parseTodoFile(t, todoFilePath)
 	
-	// Run the todo update command
-	_, stderr, err := runT5Command(t, "--config", configFile, "todo", "update")
+	// Run the update command
+	_, stderr, err := runT5Command(t, "--config", configFile, "update")
 	if err != nil {
 		t.Fatalf("Command failed: %v\nStderr: %s", err, stderr)
 	}
@@ -69,7 +69,7 @@ func TestTaskLifecycle(t *testing.T) {
 	defer cleanup()
 
 	// Initialize the event store
-	_, stderr, err := runT5Command(t, "--config", configFile, "todo", "update")
+	_, stderr, err := runT5Command(t, "--config", configFile, "update")
 	if err != nil {
 		t.Fatalf("Update command failed: %v\nStderr: %s", err, stderr)
 	}
@@ -87,7 +87,7 @@ func TestTaskLifecycle(t *testing.T) {
 	require.NoError(t, err, "Should be able to write to the todo.txt file")
 
 	// Run update to process the new task
-	_, stderr, err = runT5Command(t, "--config", configFile, "todo", "update")
+	_, stderr, err = runT5Command(t, "--config", configFile, "update")
 	if err != nil {
 		t.Fatalf("Update command failed: %v\nStderr: %s", err, stderr)
 	}
@@ -129,7 +129,7 @@ func TestTaskLifecycle(t *testing.T) {
 	require.NoError(t, err, "Should be able to write to the todo.txt file")
 
 	// Run update to process the completion with explicit flag for enforce-completion-date
-	_, stderr, err = runT5Command(t, "--config", configFile, "--enforce-completion-date=true", "todo", "update")
+	_, stderr, err = runT5Command(t, "--config", configFile, "--enforce-completion-date=true", "update")
 	if err != nil {
 		t.Fatalf("Update command failed: %v\nStderr: %s", err, stderr)
 	}
@@ -161,7 +161,7 @@ func TestPriorityHandling(t *testing.T) {
 	defer cleanup()
 
 	// Initialize the event store
-	_, stderr, err := runT5Command(t, "--config", configFile, "todo", "update")
+	_, stderr, err := runT5Command(t, "--config", configFile, "update")
 	if err != nil {
 		t.Fatalf("Update command failed: %v\nStderr: %s", err, stderr)
 	}
@@ -185,7 +185,7 @@ func TestPriorityHandling(t *testing.T) {
 	require.NoError(t, err, "Should be able to write to the todo.txt file")
 
 	// Run update to process the new tasks
-	_, stderr, err = runT5Command(t, "--config", configFile, "todo", "update")
+	_, stderr, err = runT5Command(t, "--config", configFile, "update")
 	if err != nil {
 		t.Fatalf("Update command failed: %v\nStderr: %s", err, stderr)
 	}
@@ -231,7 +231,7 @@ func TestAddMultipleTasksViaStdin(t *testing.T) {
 	defer cleanup()
 
 	// Initialize the event store
-	_, stderr, err := runT5Command(t, "--config", configFile, "todo", "update")
+	_, stderr, err := runT5Command(t, "--config", configFile, "update")
 	if err != nil {
 		t.Fatalf("Update command failed: %v\nStderr: %s", err, stderr)
 	}
@@ -256,7 +256,7 @@ func TestAddMultipleTasksViaStdin(t *testing.T) {
 	stdout := NewMockOutput()
 	mockStderr := NewMockOutput()
 	
-	fullArgs := []string{"t5", "--config", configFile, "add", "todo"}
+	fullArgs := []string{"t5", "--config", configFile, "add"}
 	err = cli.Execute(fullArgs, stdin, stdout, mockStderr)
 	require.NoError(t, err, "Command should execute successfully")
 

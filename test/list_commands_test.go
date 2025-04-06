@@ -13,7 +13,7 @@ func TestList(t *testing.T) {
 	defer cleanup()
 
 	// First run update to ensure the event store is populated
-	_, stderr, err := runT5Command(t, "--config", configFile, "todo", "update")
+	_, stderr, err := runT5Command(t, "--config", configFile, "update")
 	if err != nil {
 		t.Fatalf("Update command failed: %v\nStderr: %s", err, stderr)
 	}
@@ -23,7 +23,7 @@ func TestList(t *testing.T) {
 	tasks := parseTodoFile(t, todoFilePath)
 
 	// Then test the list command
-	stdout, stderr, err := runT5Command(t, "--config", configFile, "list", "todo")
+	stdout, stderr, err := runT5Command(t, "--config", configFile, "list")
 	if err != nil {
 		t.Fatalf("List command failed: %v\nStderr: %s", err, stderr)
 	}

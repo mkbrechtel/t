@@ -8,7 +8,7 @@ import (
 )
 
 // UpdateTasks updates and ensures properties of tasks in your todo list
-// Follows the t5 update todo [file] pattern
+// Follows the t5 update [file] pattern
 func UpdateTasks(ctx *AppContext) {
 	// Read tasks from todo.txt file
 	taskList, err := todo.ReadTodoFile(ctx.Config.TodoFile)

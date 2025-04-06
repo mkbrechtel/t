@@ -59,16 +59,25 @@ func StopTask(ctx *AppContext, args []string) {
 		return
 	}
 
+	// Save the TaskID before applying the event
+	taskID := state.ActiveTask.TaskID
+
+	// Get the task information before stopping
+	task, exists := state.Tasks[taskID]
+	taskName := "Unknown task"
+	if exists {
+		taskName = task.Todo
+	}
+
 	// Create and apply the event
-	event := core.NewTaskEndTime(state.ActiveTask.TaskID, *noteFlag)
+	event := core.NewTaskEndTime(taskID, *noteFlag)
 	err := ctx.Repository.SaveEvent(event)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error stopping task: %s\n", err)
 		return
 	}
 
-	task := state.Tasks[state.ActiveTask.TaskID]
-	fmt.Printf("Stopped task: %s\n", task.Todo)
+	fmt.Printf("Stopped task: %s\n", taskName)
 }
 
 // PauseTask pauses time tracking for the active task
@@ -90,17 +99,26 @@ func PauseTask(ctx *AppContext, args []string) {
 		fmt.Fprintf(os.Stderr, "Error: Task is already paused\n")
 		return
 	}
+	
+	// Save the TaskID before applying the event
+	taskID := state.ActiveTask.TaskID
+	
+	// Get the task information before pausing
+	task, exists := state.Tasks[taskID]
+	taskName := "Unknown task"
+	if exists {
+		taskName = task.Todo
+	}
 
 	// Create and apply the event
-	event := core.NewTaskPauseTime(state.ActiveTask.TaskID, *reasonFlag)
+	event := core.NewTaskPauseTime(taskID, *reasonFlag)
 	err := ctx.Repository.SaveEvent(event)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error pausing task: %s\n", err)
 		return
 	}
 
-	task := state.Tasks[state.ActiveTask.TaskID]
-	fmt.Printf("Paused task: %s\n", task.Todo)
+	fmt.Printf("Paused task: %s\n", taskName)
 }
 
 // ResumeTask resumes time tracking for the paused task
@@ -121,17 +139,26 @@ func ResumeTask(ctx *AppContext, args []string) {
 		fmt.Fprintf(os.Stderr, "Error: Task is not paused\n")
 		return
 	}
+	
+	// Save the TaskID before applying the event
+	taskID := state.ActiveTask.TaskID
+	
+	// Get the task information before resuming
+	task, exists := state.Tasks[taskID]
+	taskName := "Unknown task"
+	if exists {
+		taskName = task.Todo
+	}
 
 	// Create and apply the event
-	event := core.NewTaskResumeTime(state.ActiveTask.TaskID)
+	event := core.NewTaskResumeTime(taskID)
 	err := ctx.Repository.SaveEvent(event)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error resuming task: %s\n", err)
 		return
 	}
 
-	task := state.Tasks[state.ActiveTask.TaskID]
-	fmt.Printf("Resumed task: %s\n", task.Todo)
+	fmt.Printf("Resumed task: %s\n", taskName)
 }
 
 // ShowStatus displays the current status of the active task
