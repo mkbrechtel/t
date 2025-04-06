@@ -66,51 +66,8 @@ func (mc *ModifierComposer) AddModifierFlags(flagset *flag.FlagSet) {
 	flagset.Var(&mc.PrependFlag, "prepend", "Prepend text to task")
 }
 
-// ProcessOriginalArgs processes the original command line arguments
-// to handle flags that might have been parsed at a higher level.
-//
-// This is necessary because in the t5 command structure, flags might be
-// parsed before reaching our ModifyTask function. When a flag is parsed
-// earlier, the flag.Parse() won't trigger our flag.Value.Set() methods.
-// This manually checks for relevant flags in the original arguments and
-// explicitly calls Set() on our flag.Value implementations.
-func (mc *ModifierComposer) ProcessOriginalArgs(args []string) {
-	for _, arg := range args {
-		if arg == "--complete" {
-			mc.CompleteFlag.Set("true")
-		} else if arg == "--uncomplete" {
-			mc.UncompleteFlag.Set("true")
-		} else if arg == "--remove-priority" {
-			mc.RemovePriorityFlag.Set("true")
-		} else if arg == "--remove-due" {
-			mc.RemoveDueFlag.Set("true")
-		} else if strings.HasPrefix(arg, "--priority=") {
-			value := strings.TrimPrefix(arg, "--priority=")
-			mc.PriorityFlag.Set(value)
-		} else if strings.HasPrefix(arg, "--add-project=") {
-			value := strings.TrimPrefix(arg, "--add-project=")
-			mc.AddProjectFlag.Set(value)
-		} else if strings.HasPrefix(arg, "--remove-project=") {
-			value := strings.TrimPrefix(arg, "--remove-project=")
-			mc.RemoveProjectFlag.Set(value)
-		} else if strings.HasPrefix(arg, "--add-context=") {
-			value := strings.TrimPrefix(arg, "--add-context=")
-			mc.AddContextFlag.Set(value)
-		} else if strings.HasPrefix(arg, "--remove-context=") {
-			value := strings.TrimPrefix(arg, "--remove-context=")
-			mc.RemoveContextFlag.Set(value)
-		} else if strings.HasPrefix(arg, "--due=") {
-			value := strings.TrimPrefix(arg, "--due=")
-			mc.DueFlag.Set(value)
-		} else if strings.HasPrefix(arg, "--append=") {
-			value := strings.TrimPrefix(arg, "--append=")
-			mc.AppendFlag.Set(value)
-		} else if strings.HasPrefix(arg, "--prepend=") {
-			value := strings.TrimPrefix(arg, "--prepend=")
-			mc.PrependFlag.Set(value)
-		}
-	}
-}
+// ProcessOriginalArgs has been removed as it's no longer needed.
+// Flag parsing is now handled directly by each command with its own flag set.
 
 
 // AddModifier adds a modifier to the composer

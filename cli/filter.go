@@ -64,46 +64,8 @@ func (fc *FilterComposer) AddFilterFlags(flagset *flag.FlagSet) {
 	flagset.Var(&fc.RegexFlag, "regex", "Filter tasks using a regular expression")
 }
 
-// ProcessOriginalArgs processes the original command line arguments
-// to handle flags that might have been parsed at a higher level.
-//
-// This is necessary because in the t5 command structure, flags might be
-// parsed before reaching our ListTasks or ModifyTask functions. When a flag
-// is parsed earlier, the flag.Parse() won't trigger our flag.Value.Set() methods.
-// This manually checks for relevant flags in the original arguments and
-// explicitly calls Set() on our flag.Value implementations.
-func (fc *FilterComposer) ProcessOriginalArgs(args []string) {
-	for _, arg := range args {
-		if arg == "--completed" {
-			fc.CompletedFlag.Set("true")
-		} else if arg == "--not-completed" {
-			fc.NotCompletedFlag.Set("true")
-		} else if strings.HasPrefix(arg, "--project=") {
-			value := strings.TrimPrefix(arg, "--project=")
-			fc.ProjectFlag.Set(value)
-		} else if strings.HasPrefix(arg, "--context=") {
-			value := strings.TrimPrefix(arg, "--context=")
-			fc.ContextFlag.Set(value)
-		} else if strings.HasPrefix(arg, "--priority=") {
-			value := strings.TrimPrefix(arg, "--priority=")
-			fc.PriorityFlag.Set(value)
-		} else if arg == "--due-today" {
-			fc.DueTodayFlag.Set("true")
-		} else if strings.HasPrefix(arg, "--due-before=") {
-			value := strings.TrimPrefix(arg, "--due-before=")
-			fc.DueBeforeFlag.Set(value)
-		} else if strings.HasPrefix(arg, "--created-after=") {
-			value := strings.TrimPrefix(arg, "--created-after=")
-			fc.CreatedAfterFlag.Set(value)
-		} else if strings.HasPrefix(arg, "--has-tag=") {
-			value := strings.TrimPrefix(arg, "--has-tag=")
-			fc.HasTagFlag.Set(value)
-		} else if strings.HasPrefix(arg, "--regex=") {
-			value := strings.TrimPrefix(arg, "--regex=")
-			fc.RegexFlag.Set(value)
-		}
-	}
-}
+// ProcessOriginalArgs has been removed as it's no longer needed.
+// Flag parsing is now handled directly by each command with its own flag set.
 
 
 // AddFilter adds a filter to the composer

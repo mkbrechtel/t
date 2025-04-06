@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	
@@ -9,15 +10,18 @@ import (
 
 // ListTasks lists tasks from the event store with optional filters
 // Follows the t5 list todo pattern
-func ListTasks(ctx *AppContext) {
+func ListTasks(ctx *AppContext, args []string) {
+	// Create a dedicated FlagSet for list command
+	fs := flag.NewFlagSet("list", flag.ExitOnError)
+	
 	// Create a filter composer
 	filterer := NewFilterComposer()
 	
 	// Add filter flags to the flagset
-	filterer.AddFilterFlags(ctx.FlagSet)
+	filterer.AddFilterFlags(fs)
 	
-	// Process original args to handle flags parsed at higher level
-	filterer.ProcessOriginalArgs(ctx.OriginalArgs)
+	// Parse the args for this specific command
+	fs.Parse(args)
 	
 	// Compose the final filter
 	taskFilter := filterer.ComposeFilter()

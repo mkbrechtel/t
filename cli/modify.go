@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"flag"
 	"fmt"
 	"log"
 
@@ -11,15 +12,18 @@ import (
 
 // ModifyTask applies modifications to a task identified by ID
 // Follows the t5 modify <task-id> pattern where task-id is a direct object
-func ModifyTask(ctx *AppContext, taskID string) {
+func ModifyTask(ctx *AppContext, taskID string, args []string) {
+	// Create a dedicated FlagSet for modify command
+	fs := flag.NewFlagSet("modify", flag.ExitOnError)
+	
 	// Create a modifier composer
 	modifier := NewModifierComposer()
 	
 	// Add modifier flags to the flagset
-	modifier.AddModifierFlags(ctx.FlagSet)
+	modifier.AddModifierFlags(fs)
 	
-	// Process original args for flags parsed at higher level
-	modifier.ProcessOriginalArgs(ctx.OriginalArgs)
+	// Parse the args for this specific command
+	fs.Parse(args)
 	
 	// Find the task by ID (either UUID or short ID)
 	var task core.Task
