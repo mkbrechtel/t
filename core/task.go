@@ -22,8 +22,17 @@ type Task struct {
 	CompletedDate  time.Time
 	Completed      bool
 	UsedTime       time.Duration
+	DailyTimeSpent map[string]time.Duration // Maps date string (YYYY-MM-DD) to time spent
 	Active         bool
 	Source         string
+}
+
+// GetDailyTimeSpent returns the time spent on a task for a given date
+func (t Task) GetDailyTimeSpent(date string) time.Duration {
+	if t.DailyTimeSpent == nil {
+		return 0
+	}
+	return t.DailyTimeSpent[date]
 }
 
 // ToTodoTxt converts a Task to todo.txt format
@@ -138,6 +147,7 @@ func (e *TodoTxtTaskUpdate) apply(state *AppState) error {
 			DueDate:        todoTask.DueDate,
 			CompletedDate:  todoTask.CompletedDate,
 			Completed:      todoTask.Completed,
+			DailyTimeSpent: make(map[string]time.Duration),
 			Source:         e.Source,
 		}
 

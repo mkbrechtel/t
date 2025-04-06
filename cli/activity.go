@@ -156,12 +156,20 @@ func ShowStatus(ctx *AppContext, args []string) {
 	// Calculate how long the task has been running
 	var runningTime time.Duration
 	now := time.Now()
+	today := now.Format("2006-01-02")
+	
+	// Get time spent today (excluding current session)
+	todayTimeSpent := time.Duration(0)
+	if task.DailyTimeSpent != nil {
+		todayTimeSpent = task.DailyTimeSpent[today]
+	}
 	
 	if state.ActiveTask.LastPaused.IsZero() {
 		// Not paused
 		runningTime = now.Sub(state.ActiveTask.StartTime) - state.ActiveTask.TotalPaused
 		fmt.Printf("Active task: %s\n", task.Todo)
 		fmt.Printf("Running for: %s\n", formatDuration(runningTime))
+		fmt.Printf("Time today: %s\n", formatDuration(todayTimeSpent+runningTime)) // Add current session
 		fmt.Printf("Started at: %s\n", state.ActiveTask.StartTime.Format("2006-01-02 15:04:05"))
 	} else {
 		// Paused
@@ -169,6 +177,7 @@ func ShowStatus(ctx *AppContext, args []string) {
 		pausedTime := now.Sub(state.ActiveTask.LastPaused)
 		fmt.Printf("Paused task: %s\n", task.Todo)
 		fmt.Printf("Active time: %s\n", formatDuration(runningTime))
+		fmt.Printf("Time today: %s\n", formatDuration(todayTimeSpent+runningTime)) // Add current session
 		fmt.Printf("Paused for: %s\n", formatDuration(pausedTime))
 		fmt.Printf("Started at: %s\n", state.ActiveTask.StartTime.Format("2006-01-02 15:04:05"))
 	}

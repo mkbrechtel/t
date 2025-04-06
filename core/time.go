@@ -107,6 +107,14 @@ func (e *TaskEndTime) apply(state *AppState) error {
 	if exists {
 		task.UsedTime += effectiveDuration
 		task.Active = false
+		
+		// Update daily time spent
+		today := e.EndTime.Format("2006-01-02")
+		if task.DailyTimeSpent == nil {
+			task.DailyTimeSpent = make(map[string]time.Duration)
+		}
+		task.DailyTimeSpent[today] += effectiveDuration
+		
 		state.Tasks[e.TaskID] = task
 
 		// Update project used time if the task has projects
