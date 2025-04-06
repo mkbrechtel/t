@@ -32,6 +32,7 @@ func Execute(args []string, stdin io.ReadCloser, stdout, stderr io.WriteCloser) 
 		fmt.Fprintf(stderr, "  modify <task-id> {modifier flags}    Modify an existing task with various flags\n")
 		fmt.Fprintf(stderr, "  update [file]                        Update and ensure properties of tasks in your todo list\n")
 		fmt.Fprintf(stderr, "  sync [file]                          Sync tasks with a todo.txt file\n")
+		fmt.Fprintf(stderr, "  sync provider:<name>                 Sync tasks with a specific provider\n")
 		fmt.Fprintf(stderr, "  config                               Show the current configuration\n")
 		fmt.Fprintf(stderr, "  start <task-id> [--note \"text\"]      Start time tracking for a task\n")
 		fmt.Fprintf(stderr, "  stop [--note \"text\"]                 Stop time tracking for the active task\n")
@@ -127,10 +128,8 @@ func Execute(args []string, stdin io.ReadCloser, stdout, stderr io.WriteCloser) 
 		UpdateTasks(ctx)
 	// "todo" command has been removed in favor of direct commands
 	case "sync":
-		// Check if a specific file was specified
-		if len(cmdArgs) > 1 {
-			ctx.Config.TodoFile = cmdArgs[1]
-		}
+		// Store all arguments for the sync command to handle multiple providers
+		ctx.Args = cmdArgs[1:]
 		SyncTasks(ctx)
 	case "config":
 		ctx.ShowConfig()

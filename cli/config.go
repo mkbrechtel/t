@@ -8,17 +8,21 @@ import (
 	
 	"github.com/adrg/xdg"
 	yaml "gopkg.in/yaml.v2"
+	
 	"t5.mkbrechtel.dev/t5/core"
+	"t5.mkbrechtel.dev/t5/sync"
 )
 
 // AppConfig holds all configuration settings
 type AppConfig struct {
-	TodoFile             string
-	ConfigFile           string
-	EventStoreFile       string
-	PreferShortIds       bool
-	EnforceCreationDate  bool
+	TodoFile              string
+	ConfigFile            string
+	EventStoreFile        string
+	PreferShortIds        bool
+	EnforceCreationDate   bool
 	EnforceCompletionDate bool
+	TodoFiles             []TodoFileConfig        `yaml:"todofiles,omitempty"`
+	SyncProviders         []sync.ProviderConfig  `yaml:"syncproviders,omitempty"`
 }
 
 // DefaultAppConfig returns a configuration with default values
@@ -30,20 +34,23 @@ func DefaultAppConfig() *AppConfig {
 		PreferShortIds:       true,
 		EnforceCreationDate:  true,
 		EnforceCompletionDate: true,
+		TodoFiles:            []TodoFileConfig{},
+		SyncProviders:        []sync.ProviderConfig{},
 	}
 }
 
 // AppContext holds application state and configuration
 type AppContext struct {
-	Config *AppConfig
+	Config     *AppConfig
 	Repository *core.Repository
-	FlagSet *flag.FlagSet
+	FlagSet    *flag.FlagSet
+	Args       []string
 }
 
 // NewAppContext creates a new application context with default config
 func NewAppContext() *AppContext {
 	return &AppContext{
-		Config: DefaultAppConfig(),
+		Config:  DefaultAppConfig(),
 		FlagSet: flag.CommandLine,
 	}
 }
@@ -91,19 +98,48 @@ func (ctx *AppContext) ShowConfig() {
 	fmt.Printf("  Prefer Short IDs: %v\n", ctx.Config.PreferShortIds)
 	fmt.Printf("  Enforce Creation Date: %v\n", ctx.Config.EnforceCreationDate)
 	fmt.Printf("  Enforce Completion Date: %v\n", ctx.Config.EnforceCompletionDate)
+	
+	// Display additional todo files
+	if len(ctx.Config.TodoFiles) > 0 {
+		fmt.Println("\nAdditional Todo Files:")
+		for _, tf := range ctx.Config.TodoFiles {
+			fmt.Printf("  %s\n", tf.Path)
+		}
+	}
+	
+	// Display sync providers
+	if len(ctx.Config.SyncProviders) > 0 {
+		fmt.Println("\nSync Providers:")
+		for _, sp := range ctx.Config.SyncProviders {
+			status := "disabled"
+			if sp.Enabled {
+				status = "enabled"
+			}
+			fmt.Printf("  %s (%s, direction: %s)\n", sp.Type, status, sp.Direction)
+		}
+	}
 }
 
 // GetTodoFiles retrieves the configured todo.txt files
 func (ctx *AppContext) GetTodoFiles() []TodoFileConfig {
-	todoFile := TodoFileConfig{
-		Path: ctx.Config.TodoFile,
-		Ensure: map[string]bool{
-			"prefershortids":       ctx.Config.PreferShortIds,
-			"enforcecompletiondate": ctx.Config.EnforceCompletionDate,
-			"enforcecreationdate":   ctx.Config.EnforceCreationDate,
+	// Start with the default todo file
+	todoFiles := []TodoFileConfig{
+		{
+			Path: ctx.Config.TodoFile,
+			Ensure: map[string]bool{
+				"prefershortids":       ctx.Config.PreferShortIds,
+				"enforcecompletiondate": ctx.Config.EnforceCompletionDate,
+				"enforcecreationdate":   ctx.Config.EnforceCreationDate,
+			},
 		},
 	}
-	return []TodoFileConfig{todoFile}
+	
+	// Add any additional todo files configured
+	if len(ctx.Config.TodoFiles) > 0 {
+		todoFiles = append(todoFiles, ctx.Config.TodoFiles...)
+	}
+	
+	return todoFiles
 }
 
 // IsFlagPassed checks if a flag was explicitly passed on the command line
@@ -146,6 +182,8 @@ func (ctx *AppContext) LoadConfigFile() error {
 				EnforceCompletionDate bool `yaml:"enforcecompletiondate"`
 			} `yaml:"ensure"`
 		} `yaml:"todo"`
+		TodoFiles    []TodoFileConfig      `yaml:"todofiles"`
+		SyncProviders []sync.ProviderConfig `yaml:"syncproviders"`
 		EventStore struct {
 			File string `yaml:"file"`
 		} `yaml:"eventstore"`
@@ -175,6 +213,16 @@ func (ctx *AppContext) LoadConfigFile() error {
 	
 	if !ctx.IsFlagPassed("enforce-completion-date") {
 		cfg.EnforceCompletionDate = config.Todo.Ensure.EnforceCompletionDate
+	}
+	
+	// Load additional todo files
+	if len(config.TodoFiles) > 0 {
+		cfg.TodoFiles = config.TodoFiles
+	}
+	
+	// Load sync providers
+	if len(config.SyncProviders) > 0 {
+		cfg.SyncProviders = config.SyncProviders
 	}
 
 	return nil

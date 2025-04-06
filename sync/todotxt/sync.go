@@ -123,9 +123,20 @@ func SyncWithRepository(repo *core.Repository, todoFilePath string) (*SyncResult
 	
 	// Write any changes back to todo.txt if needed
 	if result.ToTodoTxt > 0 {
-		// Add the existing tasks
+		// Create a map to track which tasks (by UUID) are already in tasksToWrite
+		tasksAlreadyIncluded := make(map[string]bool)
+		for _, task := range tasksToWrite {
+			if uuid, exists := task.AdditionalTags["uuid"]; exists && uuid != "" {
+				tasksAlreadyIncluded[uuid] = true
+			}
+		}
+		
+		// Add the existing tasks that aren't duplicates
 		for _, task := range todoList {
-			tasksToWrite = append(tasksToWrite, task)
+			uuid, hasUUID := task.AdditionalTags["uuid"]
+			if !hasUUID || !tasksAlreadyIncluded[uuid] {
+				tasksToWrite = append(tasksToWrite, task)
+			}
 		}
 		
 		err = WriteTodoFile(tasksToWrite, todoFilePath)

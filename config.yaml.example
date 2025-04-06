@@ -1,0 +1,93 @@
+todo:
+  file: "todo.txt"
+  ensure:
+    prefershortids: true
+    enforcecreationdate: true
+    enforcecompletiondate: true
+
+todofiles:
+  - path: "work.txt"
+    ensure:
+      prefershortids: true
+      enforcecreationdate: true
+      enforcecompletiondate: true
+  - path: "home.txt"
+    ensure:
+      prefershortids: true
+      enforcecreationdate: true
+      enforcecompletiondate: false
+
+syncproviders:
+  - type: "todotxt"
+    enabled: true
+    direction: "both"
+    params:
+      file_path: "work.txt"
+    import_filter:
+      project: "Work"
+    import_modifier:
+      add_project: "Work"
+      priority: "B"
+  
+  - type: "github"
+    enabled: false
+    direction: "import"
+    params:
+      token: "your_github_token"
+      base_url: "https://api.github.com"
+      issues_url: "/issues"
+      issue_prefix: "GitHub: "
+      pr_prefix: "GitHub PR: "
+    import_filter:
+      not-completed: true
+    import_modifier:
+      add_project: "GitHub"
+      priority: "C"
+  
+  - type: "gitlab"
+    enabled: false
+    direction: "import"
+    params:
+      token: "your_gitlab_token"
+      base_url: "https://gitlab.com/api/v4"
+      issues_url: "/issues?state=opened&scope=assigned_to_me"
+      merge_requests_url: "/merge_requests?state=opened&scope=assigned_to_me"
+      issue_prefix: "GitLab: "
+      mr_prefix: "GitLab MR: "
+    import_filter:
+      not-completed: true
+    import_modifier:
+      add_project: "GitLab"
+      priority: "C"
+  
+  - type: "openproject"
+    enabled: false
+    direction: "import"
+    params:
+      base_url: "https://your-openproject-instance.com"
+      api_key: "your_api_key"
+      query_ids: ["123", "456"]
+      task_prefix: "OpenProject: "
+    import_filter:
+      not-completed: true
+    import_modifier:
+      add_project: "OpenProject"
+      priority: "B"
+  
+  - type: "caldav"
+    enabled: false
+    direction: "import"
+    params:
+      server_url: "https://your-caldav-server.com"
+      username: "your_username"
+      password: "your_password"
+      calendar_id: "tasks"
+      task_prefix: "CalDAV: "
+    import_filter:
+      not-completed: true
+    import_modifier:
+      add_project: "Personal"
+      add_context: "digital"
+
+eventstore:
+  file: "events.jsonl"
