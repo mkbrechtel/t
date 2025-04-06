@@ -33,6 +33,15 @@ func Execute(args []string, stdin io.ReadCloser, stdout, stderr io.WriteCloser) 
 		fmt.Fprintf(stderr, "  update todo [file]                   Update and ensure properties of tasks in your todo list\n")
 		fmt.Fprintf(stderr, "  sync todo [file]                     Sync tasks with a todo.txt file\n")
 		fmt.Fprintf(stderr, "  config                               Show the current configuration\n")
+		fmt.Fprintf(stderr, "  start <task-id> [--note \"text\"]       Start time tracking for a task\n")
+		fmt.Fprintf(stderr, "  stop [--note \"text\"]                  Stop time tracking for the active task\n")
+		fmt.Fprintf(stderr, "  pause [--reason \"text\"]               Pause time tracking for the active task\n")
+		fmt.Fprintf(stderr, "  resume                               Resume time tracking for the paused task\n")
+		fmt.Fprintf(stderr, "  status                               Show the current time tracking status\n")
+		fmt.Fprintf(stderr, "  budget set <project> <duration>      Set a time budget for a project\n")
+		fmt.Fprintf(stderr, "  budget show <project>                Show budget for a project\n")
+		fmt.Fprintf(stderr, "  budget list                          List all project budgets\n")
+		fmt.Fprintf(stderr, "  report [--daily|--weekly|--monthly]  Generate time tracking reports\n")
 		fmt.Fprintf(stderr, "\nFilter flags:\n")
 		fmt.Fprintf(stderr, "  --completed                          Show only completed tasks\n")
 		fmt.Fprintf(stderr, "  --not-completed                      Show only non-completed tasks\n")
@@ -186,6 +195,41 @@ func Execute(args []string, stdin io.ReadCloser, stdout, stderr io.WriteCloser) 
 		}
 	case "config":
 		ctx.ShowConfig()
+	case "start":
+		if len(cmdArgs) > 1 {
+			// First argument is the task ID
+			taskID := cmdArgs[1]
+			// Pass the remaining arguments to the start command
+			remainingArgs := cmdArgs[2:]
+			StartTask(ctx, taskID, remainingArgs)
+		} else {
+			fmt.Fprintf(stderr, "Error: Task ID required for start command\n")
+			return fmt.Errorf("task ID required for start command")
+		}
+	case "stop":
+		// Pass the remaining arguments to the stop command
+		remainingArgs := cmdArgs[1:]
+		StopTask(ctx, remainingArgs)
+	case "pause":
+		// Pass the remaining arguments to the pause command
+		remainingArgs := cmdArgs[1:]
+		PauseTask(ctx, remainingArgs)
+	case "resume":
+		// Pass the remaining arguments to the resume command
+		remainingArgs := cmdArgs[1:]
+		ResumeTask(ctx, remainingArgs)
+	case "status":
+		// Pass the remaining arguments to the status command
+		remainingArgs := cmdArgs[1:]
+		ShowStatus(ctx, remainingArgs)
+	case "budget":
+		// Pass the remaining arguments to the budget command
+		remainingArgs := cmdArgs[1:]
+		BudgetCommand(ctx, remainingArgs)
+	case "report":
+		// Pass the remaining arguments to the report command
+		remainingArgs := cmdArgs[1:]
+		ReportCommand(ctx, remainingArgs)
 	default:
 		fmt.Fprintf(stderr, "Unknown command: %s\n", command)
 		fs.Usage()

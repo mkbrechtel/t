@@ -10,4 +10,6 @@ type Project struct {
 	ID          uuid.UUID
 	Name        string
 	Budget      time.Duration
+	UsedTime    time.Duration
+	Description string
 }

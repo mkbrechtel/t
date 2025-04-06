@@ -22,6 +22,7 @@ type Task struct {
 	CompletedDate  time.Time
 	Completed      bool
 	UsedTime       time.Duration
+	Active         bool
 	Source         string
 }
 

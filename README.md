@@ -22,6 +22,13 @@ Available commands:
 * `t5 todo [update|add|modify] [args]` - Todo command with subcommands
 * `t5 sync [file]` - Synchronize tasks between todo.txt and event store
 * `t5 config` - Display current configuration settings
+* `t5 start <task-id>` - Start time tracking for a task
+* `t5 stop` - Stop time tracking for the active task
+* `t5 pause` - Pause time tracking for the active task
+* `t5 resume` - Resume time tracking for the paused task
+* `t5 status` - Show the current time tracking status
+* `t5 budget [set|show|list]` - Manage project time budgets
+* `t5 report` - Generate time tracking reports
 
 Common flags:
 * `--todo, -t` - Specify todo.txt file path
@@ -104,6 +111,11 @@ Key benefits of this approach:
 
 Currently implemented event types:
 - `TodoTxtTaskUpdate`: Updates tasks from todo.txt format
+- `TaskStartTime`: Records when a task was started
+- `TaskEndTime`: Records when a task was stopped
+- `TaskPauseTime`: Records when a task was paused
+- `TaskResumeTime`: Records when a task was resumed
+- `SetTimeBudgetForProject`: Sets a time budget for a project
 
 Example usage:
 ```go
@@ -154,22 +166,22 @@ See the complete [Data Model Documentation](docs/design/data-model.md) for more 
    - [x] Implement project/context addition/removal
    - [x] Add bulk task modification options
 
-### Phase 2: Time Tracking and Activity Management
+### Phase 2: Time Tracking and Activity Management ✅
 
-- [ ] **Activity Selection**
-   - [ ] Implement `t5 start [task-id]` to begin time tracking
-   - [ ] Design `TaskStartTime` and `TaskEndTime` event applications
-   - [ ] Add `t5 pause` and `t5 resume` commands
+- [x] **Activity Selection**
+   - [x] Implement `t5 start [task-id]` to begin time tracking
+   - [x] Design `TaskStartTime` and `TaskEndTime` event applications
+   - [x] Add `t5 pause` and `t5 resume` commands
 
-- [ ] **Time Budget Management**
-   - [ ] Implement `t5 set budget [project] [budget]` command
-   - [ ] Implement budget usage tracking
-   - [ ] Add time budget reporting
+- [x] **Time Budget Management**
+   - [x] Implement `t5 budget set [project] [budget]` command
+   - [x] Implement budget usage tracking
+   - [x] Add time budget reporting
 
-- [ ] **Activity Reporting**
-   - [ ] Implement `t5 status` to show current activity
-   - [ ] Create daily/weekly/monthly time reports
-   - [ ] Add formatting options for reports
+- [x] **Activity Reporting**
+   - [x] Implement `t5 status` to show current activity
+   - [x] Create daily/weekly/monthly time reports
+   - [x] Add formatting options for reports
 
 ### Phase 3: Synchronization Capabilities
 
@@ -230,10 +242,10 @@ See the complete [Data Model Documentation](docs/design/data-model.md) for more 
 - [x] Comprehensive filtering system
 - [x] Improved command line experience
 
-### Milestone 2: Time Tracking System (2-3 weeks)
-- [ ] Working activity tracking
-- [ ] Budget management
-- [ ] Basic reporting
+### Milestone 2: Time Tracking System (2-3 weeks) ✅
+- [x] Working activity tracking
+- [x] Budget management
+- [x] Basic reporting
 
 ### Milestone 3: Synchronization Framework (3-4 weeks)
 - [ ] Complete todo.txt sync
@@ -257,10 +269,10 @@ See the complete [Data Model Documentation](docs/design/data-model.md) for more 
    - [x] Implement stdin task creation
    - [x] Create basic task modification commands
 
-- [ ] **Complete Time Tracking Logic**
-   - [ ] Implement the `apply()` method for `TaskStartTime` and `TaskEndTime` events
-   - [ ] Create task duration calculations
-   - [ ] Add start/pause/resume commands
+- [x] **Complete Time Tracking Logic**
+   - [x] Implement the `apply()` method for `TaskStartTime` and `TaskEndTime` events
+   - [x] Create task duration calculations
+   - [x] Add start/pause/resume commands
 
 - [x] **Enhance Task Filtering**
    - [x] Implement todo.txt property filters

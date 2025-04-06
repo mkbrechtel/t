@@ -19,12 +19,12 @@ t5 is supposed to provide a flexible solution for task and todo management with 
 - [ ] basic cli for searching, changing and sorting tasks
 
 ## activity and time tracking
-- [ ] ability to select a project that is currently being worked on
-- [ ] select a task currently being worked upon, starting time tracking
-- [ ] action to asign a time budget to a project or task
-- [ ] pause the current activity
-- [ ] finish current activity as done, stopping time tracking and marking it as done
-- [ ] based on timeclock format
+- [x] ability to select a project that is currently being worked on
+- [x] select a task currently being worked upon, starting time tracking
+- [x] action to asign a time budget to a project or task
+- [x] pause the current activity
+- [x] finish current activity as done, stopping time tracking and marking it as done
+- [x] based on timeclock format
 - [ ] use i3 socket protocol to automatically guess what user is currently doing
 
 ## sync
