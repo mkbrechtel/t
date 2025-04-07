@@ -3,8 +3,7 @@ package caldav
 import (
 	"fmt"
 	"time"
-	"strings"
-	
+
 	"t5.mkbrechtel.dev/t5/core"
 	"t5.mkbrechtel.dev/t5/sync"
 	"t5.mkbrechtel.dev/t5/utils"
@@ -12,29 +11,29 @@ import (
 
 // CalDAVTask represents a task in a CalDAV server
 type CalDAVTask struct {
-	UID           string
-	URL           string
-	Summary       string
-	Description   string
-	Categories    []string
-	Priority      int // 0 (undefined), 1 (high), 5 (medium), 9 (low)
-	Status        string // NEEDS-ACTION, IN-PROCESS, COMPLETED, CANCELLED
-	Created       time.Time
-	Modified      time.Time
-	Due           time.Time
-	Start         time.Time
-	Completed     time.Time
+	UID             string
+	URL             string
+	Summary         string
+	Description     string
+	Categories      []string
+	Priority        int    // 0 (undefined), 1 (high), 5 (medium), 9 (low)
+	Status          string // NEEDS-ACTION, IN-PROCESS, COMPLETED, CANCELLED
+	Created         time.Time
+	Modified        time.Time
+	Due             time.Time
+	Start           time.Time
+	Completed       time.Time
 	PercentComplete int // 0-100
 }
 
 // CalDAVProvider is a mock implementation of a CalDAV sync provider
 // In a real implementation, this would connect to a CalDAV server
 type CalDAVProvider struct {
-	serverURL      string
-	username       string
-	password       string
-	calendarID     string
-	taskPrefix     string
+	serverURL  string
+	username   string
+	password   string
+	calendarID string
+	taskPrefix string
 }
 
 // NewCalDAVProvider creates a new CalDAV sync provider
@@ -88,7 +87,7 @@ func (p *CalDAVProvider) Sync(repo *core.Repository, filter core.TaskFilter, mod
 // taskToString converts a Task to a todo.txt string
 func taskToString(task core.Task) string {
 	todoTxt := ""
-	
+
 	// Add completion mark if completed
 	if task.Completed {
 		todoTxt += "x "
@@ -97,35 +96,35 @@ func taskToString(task core.Task) string {
 			todoTxt += task.CompletedDate.Format("2006-01-02") + " "
 		}
 	}
-	
+
 	// Add priority if available
 	if task.Priority != "" {
 		todoTxt += "(" + task.Priority + ") "
 	}
-	
+
 	// Add creation date if available
 	if !task.CreatedDate.IsZero() {
 		todoTxt += task.CreatedDate.Format("2006-01-02") + " "
 	}
-	
+
 	// Add main text
 	todoTxt += task.Todo
-	
+
 	// Add projects
 	for _, project := range task.Projects {
 		todoTxt += " +" + project
 	}
-	
+
 	// Add contexts
 	for _, context := range task.Contexts {
 		todoTxt += " @" + context
 	}
-	
+
 	// Add due date if available
 	if !task.DueDate.IsZero() {
 		todoTxt += " due:" + task.DueDate.Format("2006-01-02")
 	}
-	
+
 	// Add other tags
 	for key, value := range task.AdditionalTags {
 		// Skip internal tags
@@ -134,10 +133,10 @@ func taskToString(task core.Task) string {
 		}
 		todoTxt += " " + key + ":" + value
 	}
-	
+
 	// Add UUID
 	todoTxt += " uuid:" + utils.LongEncodeUUID(task.ID)
-	
+
 	return todoTxt
 }
 
@@ -149,27 +148,27 @@ func NewCalDAVProviderFactory() sync.SyncProviderFactory {
 		if !ok || serverURL == "" {
 			return nil, fmt.Errorf("missing or invalid server_url parameter for CalDAV provider")
 		}
-		
+
 		username, ok := config.Params["username"].(string)
 		if !ok || username == "" {
 			return nil, fmt.Errorf("missing or invalid username parameter for CalDAV provider")
 		}
-		
+
 		password, ok := config.Params["password"].(string)
 		if !ok || password == "" {
 			return nil, fmt.Errorf("missing or invalid password parameter for CalDAV provider")
 		}
-		
+
 		calendarID, ok := config.Params["calendar_id"].(string)
 		if !ok || calendarID == "" {
 			return nil, fmt.Errorf("missing or invalid calendar_id parameter for CalDAV provider")
 		}
-		
+
 		taskPrefix, ok := config.Params["task_prefix"].(string)
 		if !ok {
 			taskPrefix = "CalDAV: "
 		}
-		
+
 		return NewCalDAVProvider(serverURL, username, password, calendarID, taskPrefix), nil
 	}
 }
