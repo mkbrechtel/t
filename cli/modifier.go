@@ -12,19 +12,19 @@ import (
 // ModifierComposer combines multiple modifiers and provides flag.Value
 // implementations for easy flag integration
 type ModifierComposer struct {
-	Modifiers     core.ChainModifier
-	CompleteFlag  CompleteFlag
-	UncompleteFlag UncompleteFlag
-	PriorityFlag  PriorityModifierFlag
+	Modifiers          core.ChainModifier
+	CompleteFlag       CompleteFlag
+	UncompleteFlag     UncompleteFlag
+	PriorityFlag       PriorityModifierFlag
 	RemovePriorityFlag RemovePriorityFlag
-	AddProjectFlag AddProjectFlag
-	RemoveProjectFlag RemoveProjectFlag
-	AddContextFlag AddContextFlag
-	RemoveContextFlag RemoveContextFlag
-	DueFlag       DueFlag
-	RemoveDueFlag RemoveDueFlag
-	AppendFlag    AppendFlag
-	PrependFlag   PrependFlag
+	AddProjectFlag     AddProjectFlag
+	RemoveProjectFlag  RemoveProjectFlag
+	AddContextFlag     AddContextFlag
+	RemoveContextFlag  RemoveContextFlag
+	DueFlag            DueFlag
+	RemoveDueFlag      RemoveDueFlag
+	AppendFlag         AppendFlag
+	PrependFlag        PrependFlag
 }
 
 // NewModifierComposer creates a new ModifierComposer
@@ -32,7 +32,7 @@ func NewModifierComposer() *ModifierComposer {
 	mc := &ModifierComposer{
 		Modifiers: core.ChainModifier{Modifiers: make([]core.TaskModifier, 0)},
 	}
-	
+
 	// Initialize flags with parent reference
 	mc.CompleteFlag.parent = mc
 	mc.UncompleteFlag.parent = mc
@@ -46,7 +46,7 @@ func NewModifierComposer() *ModifierComposer {
 	mc.RemoveDueFlag.parent = mc
 	mc.AppendFlag.parent = mc
 	mc.PrependFlag.parent = mc
-	
+
 	return mc
 }
 
@@ -69,7 +69,6 @@ func (mc *ModifierComposer) AddModifierFlags(flagset *flag.FlagSet) {
 // ProcessOriginalArgs has been removed as it's no longer needed.
 // Flag parsing is now handled directly by each command with its own flag set.
 
-
 // AddModifier adds a modifier to the composer
 func (mc *ModifierComposer) AddModifier(modifier core.TaskModifier) {
 	if modifier != nil {
@@ -87,15 +86,15 @@ func (mc *ModifierComposer) ComposeModifier() core.TaskModifier {
 			activeModifiers = append(activeModifiers, mod)
 		}
 	}
-	
+
 	if len(activeModifiers) == 0 {
 		return nil
 	}
-	
+
 	if len(activeModifiers) == 1 {
 		return activeModifiers[0]
 	}
-	
+
 	// Create a new chain with only active modifiers
 	return &core.ChainModifier{Modifiers: activeModifiers}
 }
@@ -113,11 +112,11 @@ func (f *CompleteFlag) String() string {
 func (f *CompleteFlag) Set(value string) error {
 	// For boolean flags, presence of the flag is enough
 	f.value = true
-	
+
 	// Create complete modifier
 	modifier := &core.CompletionModifier{Complete: true}
 	f.parent.AddModifier(modifier)
-	
+
 	return nil
 }
 
@@ -134,11 +133,11 @@ func (f *UncompleteFlag) String() string {
 func (f *UncompleteFlag) Set(value string) error {
 	// For boolean flags, presence of the flag is enough
 	f.value = true
-	
+
 	// Create uncomplete modifier
 	modifier := &core.CompletionModifier{Uncomplete: true}
 	f.parent.AddModifier(modifier)
-	
+
 	return nil
 }
 
@@ -154,15 +153,15 @@ func (f *PriorityModifierFlag) String() string {
 
 func (f *PriorityModifierFlag) Set(value string) error {
 	f.value = value
-	
+
 	if value == "" {
 		return nil
 	}
-	
+
 	// Create priority modifier
 	modifier := &core.PriorityModifier{Priority: strings.ToUpper(strings.TrimSpace(value))}
 	f.parent.AddModifier(modifier)
-	
+
 	return nil
 }
 
@@ -179,11 +178,11 @@ func (f *RemovePriorityFlag) String() string {
 func (f *RemovePriorityFlag) Set(value string) error {
 	// For boolean flags, presence of the flag is enough
 	f.value = true
-	
+
 	// Create remove priority modifier
 	modifier := &core.PriorityModifier{RemovePriority: true}
 	f.parent.AddModifier(modifier)
-	
+
 	return nil
 }
 
@@ -199,25 +198,23 @@ func (f *AddProjectFlag) String() string {
 
 func (f *AddProjectFlag) Set(value string) error {
 	f.value = value
-	
+
 	if value == "" {
 		return nil
 	}
-	
+
 	// Process projects
 	projects := strings.Split(value, ",")
 	for i, project := range projects {
 		project = strings.TrimSpace(project)
 		// Remove leading + if present
-		if strings.HasPrefix(project, "+") {
-			project = project[1:]
-		}
+		project = strings.TrimPrefix(project, "+")
 		projects[i] = project
 	}
-	
+
 	// Check if there's already a project modifier
 	var projectModifier *core.ProjectModifier
-	
+
 	// Look for existing project modifier
 	for _, mod := range f.parent.Modifiers.Modifiers {
 		if pm, ok := mod.(*core.ProjectModifier); ok {
@@ -225,16 +222,16 @@ func (f *AddProjectFlag) Set(value string) error {
 			break
 		}
 	}
-	
+
 	// If no project modifier exists, create a new one
 	if projectModifier == nil {
 		projectModifier = &core.ProjectModifier{}
 		f.parent.AddModifier(projectModifier)
 	}
-	
+
 	// Add projects to the modifier
 	projectModifier.AddProjects = append(projectModifier.AddProjects, projects...)
-	
+
 	return nil
 }
 
@@ -250,25 +247,23 @@ func (f *RemoveProjectFlag) String() string {
 
 func (f *RemoveProjectFlag) Set(value string) error {
 	f.value = value
-	
+
 	if value == "" {
 		return nil
 	}
-	
+
 	// Process projects
 	projects := strings.Split(value, ",")
 	for i, project := range projects {
 		project = strings.TrimSpace(project)
 		// Remove leading + if present
-		if strings.HasPrefix(project, "+") {
-			project = project[1:]
-		}
+		project = strings.TrimPrefix(project, "+")
 		projects[i] = project
 	}
-	
+
 	// Check if there's already a project modifier
 	var projectModifier *core.ProjectModifier
-	
+
 	// Look for existing project modifier
 	for _, mod := range f.parent.Modifiers.Modifiers {
 		if pm, ok := mod.(*core.ProjectModifier); ok {
@@ -276,16 +271,16 @@ func (f *RemoveProjectFlag) Set(value string) error {
 			break
 		}
 	}
-	
+
 	// If no project modifier exists, create a new one
 	if projectModifier == nil {
 		projectModifier = &core.ProjectModifier{}
 		f.parent.AddModifier(projectModifier)
 	}
-	
+
 	// Add remove projects to the modifier
 	projectModifier.RemoveProjects = append(projectModifier.RemoveProjects, projects...)
-	
+
 	return nil
 }
 
@@ -301,25 +296,23 @@ func (f *AddContextFlag) String() string {
 
 func (f *AddContextFlag) Set(value string) error {
 	f.value = value
-	
+
 	if value == "" {
 		return nil
 	}
-	
+
 	// Process contexts
 	contexts := strings.Split(value, ",")
 	for i, context := range contexts {
 		context = strings.TrimSpace(context)
 		// Remove leading @ if present
-		if strings.HasPrefix(context, "@") {
-			context = context[1:]
-		}
+		context = strings.TrimPrefix(context, "@")
 		contexts[i] = context
 	}
-	
+
 	// Check if there's already a context modifier
 	var contextModifier *core.ContextModifier
-	
+
 	// Look for existing context modifier
 	for _, mod := range f.parent.Modifiers.Modifiers {
 		if cm, ok := mod.(*core.ContextModifier); ok {
@@ -327,16 +320,16 @@ func (f *AddContextFlag) Set(value string) error {
 			break
 		}
 	}
-	
+
 	// If no context modifier exists, create a new one
 	if contextModifier == nil {
 		contextModifier = &core.ContextModifier{}
 		f.parent.AddModifier(contextModifier)
 	}
-	
+
 	// Add contexts to the modifier
 	contextModifier.AddContexts = append(contextModifier.AddContexts, contexts...)
-	
+
 	return nil
 }
 
@@ -352,25 +345,23 @@ func (f *RemoveContextFlag) String() string {
 
 func (f *RemoveContextFlag) Set(value string) error {
 	f.value = value
-	
+
 	if value == "" {
 		return nil
 	}
-	
+
 	// Process contexts
 	contexts := strings.Split(value, ",")
 	for i, context := range contexts {
 		context = strings.TrimSpace(context)
 		// Remove leading @ if present
-		if strings.HasPrefix(context, "@") {
-			context = context[1:]
-		}
+		context = strings.TrimPrefix(context, "@")
 		contexts[i] = context
 	}
-	
+
 	// Check if there's already a context modifier
 	var contextModifier *core.ContextModifier
-	
+
 	// Look for existing context modifier
 	for _, mod := range f.parent.Modifiers.Modifiers {
 		if cm, ok := mod.(*core.ContextModifier); ok {
@@ -378,16 +369,16 @@ func (f *RemoveContextFlag) Set(value string) error {
 			break
 		}
 	}
-	
+
 	// If no context modifier exists, create a new one
 	if contextModifier == nil {
 		contextModifier = &core.ContextModifier{}
 		f.parent.AddModifier(contextModifier)
 	}
-	
+
 	// Add remove contexts to the modifier
 	contextModifier.RemoveContexts = append(contextModifier.RemoveContexts, contexts...)
-	
+
 	return nil
 }
 
@@ -403,21 +394,21 @@ func (f *DueFlag) String() string {
 
 func (f *DueFlag) Set(value string) error {
 	f.value = value
-	
+
 	if value == "" {
 		return nil
 	}
-	
+
 	// Parse due date
 	dueDate, err := time.Parse("2006-01-02", value)
 	if err != nil {
 		return fmt.Errorf("invalid date format: %v", err)
 	}
-	
+
 	// Create due date modifier
 	modifier := &core.DueDateModifier{DueDate: &dueDate}
 	f.parent.AddModifier(modifier)
-	
+
 	return nil
 }
 
@@ -434,11 +425,11 @@ func (f *RemoveDueFlag) String() string {
 func (f *RemoveDueFlag) Set(value string) error {
 	// For boolean flags, presence of the flag is enough
 	f.value = true
-	
+
 	// Create remove due date modifier
 	modifier := &core.DueDateModifier{RemoveDueDate: true}
 	f.parent.AddModifier(modifier)
-	
+
 	return nil
 }
 
@@ -454,14 +445,14 @@ func (f *AppendFlag) String() string {
 
 func (f *AppendFlag) Set(value string) error {
 	f.value = value
-	
+
 	if value == "" {
 		return nil
 	}
-	
+
 	// Check if there's already a text modifier
 	var textModifier *core.TextModifier
-	
+
 	// Look for existing text modifier
 	for _, mod := range f.parent.Modifiers.Modifiers {
 		if tm, ok := mod.(*core.TextModifier); ok {
@@ -469,16 +460,16 @@ func (f *AppendFlag) Set(value string) error {
 			break
 		}
 	}
-	
+
 	// If no text modifier exists, create a new one
 	if textModifier == nil {
 		textModifier = &core.TextModifier{}
 		f.parent.AddModifier(textModifier)
 	}
-	
+
 	// Set append text
 	textModifier.AppendText = value
-	
+
 	return nil
 }
 
@@ -494,14 +485,14 @@ func (f *PrependFlag) String() string {
 
 func (f *PrependFlag) Set(value string) error {
 	f.value = value
-	
+
 	if value == "" {
 		return nil
 	}
-	
+
 	// Check if there's already a text modifier
 	var textModifier *core.TextModifier
-	
+
 	// Look for existing text modifier
 	for _, mod := range f.parent.Modifiers.Modifiers {
 		if tm, ok := mod.(*core.TextModifier); ok {
@@ -509,15 +500,15 @@ func (f *PrependFlag) Set(value string) error {
 			break
 		}
 	}
-	
+
 	// If no text modifier exists, create a new one
 	if textModifier == nil {
 		textModifier = &core.TextModifier{}
 		f.parent.AddModifier(textModifier)
 	}
-	
+
 	// Set prepend text
 	textModifier.PrependText = value
-	
+
 	return nil
 }

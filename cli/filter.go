@@ -12,17 +12,17 @@ import (
 // FilterComposer combines multiple filters and provides flag.Value
 // implementations for easy flag integration
 type FilterComposer struct {
-	Filters        core.AndFilter
-	CompletedFlag  CompletionFlag
+	Filters          core.AndFilter
+	CompletedFlag    CompletionFlag
 	NotCompletedFlag CompletionFlag
-	PriorityFlag   PriorityFlag
-	ProjectFlag    ProjectFlag
-	ContextFlag    ContextFlag
-	DueTodayFlag   DueTodayFlag
-	DueBeforeFlag  DueBeforeFlag
+	PriorityFlag     PriorityFlag
+	ProjectFlag      ProjectFlag
+	ContextFlag      ContextFlag
+	DueTodayFlag     DueTodayFlag
+	DueBeforeFlag    DueBeforeFlag
 	CreatedAfterFlag CreatedAfterFlag
-	HasTagFlag     TagFlag
-	RegexFlag      RegexFlag
+	HasTagFlag       TagFlag
+	RegexFlag        RegexFlag
 }
 
 // NewFilterComposer creates a new FilterComposer
@@ -30,14 +30,14 @@ func NewFilterComposer() *FilterComposer {
 	fc := &FilterComposer{
 		Filters: core.AndFilter{Filters: make([]core.TaskFilter, 0)},
 	}
-	
+
 	// Initialize flags with parent reference
 	fc.CompletedFlag.parent = fc
 	fc.CompletedFlag.isCompleted = true
-	
+
 	fc.NotCompletedFlag.parent = fc
 	fc.NotCompletedFlag.isCompleted = false
-	
+
 	fc.PriorityFlag.parent = fc
 	fc.ProjectFlag.parent = fc
 	fc.ContextFlag.parent = fc
@@ -46,7 +46,7 @@ func NewFilterComposer() *FilterComposer {
 	fc.CreatedAfterFlag.parent = fc
 	fc.HasTagFlag.parent = fc
 	fc.RegexFlag.parent = fc
-	
+
 	return fc
 }
 
@@ -67,7 +67,6 @@ func (fc *FilterComposer) AddFilterFlags(flagset *flag.FlagSet) {
 // ProcessOriginalArgs has been removed as it's no longer needed.
 // Flag parsing is now handled directly by each command with its own flag set.
 
-
 // AddFilter adds a filter to the composer
 func (fc *FilterComposer) AddFilter(filter core.TaskFilter) {
 	if filter != nil {
@@ -84,15 +83,15 @@ func (fc *FilterComposer) ComposeFilter() core.TaskFilter {
 			activeFilters = append(activeFilters, filter)
 		}
 	}
-	
+
 	if len(activeFilters) == 0 {
 		return nil
 	}
-	
+
 	if len(activeFilters) == 1 {
 		return activeFilters[0]
 	}
-	
+
 	// Create a new AndFilter with only active filters
 	return &core.AndFilter{Filters: activeFilters}
 }
@@ -111,7 +110,7 @@ func (f *CompletionFlag) String() string {
 func (f *CompletionFlag) Set(value string) error {
 	// For boolean flags, presence of the flag is enough
 	f.value = true
-	
+
 	// Create and add filter
 	var completed *bool = &f.isCompleted
 	filter := &core.CompletionFilter{
@@ -120,7 +119,7 @@ func (f *CompletionFlag) Set(value string) error {
 		NotFlag:   !f.isCompleted,
 	}
 	f.parent.AddFilter(filter)
-	
+
 	return nil
 }
 
@@ -136,29 +135,29 @@ func (f *PriorityFlag) String() string {
 
 func (f *PriorityFlag) Set(value string) error {
 	f.value = value
-	
+
 	if value == "" {
 		return nil
 	}
-	
+
 	// Handle comma-separated list of priorities
 	priorities := strings.Split(value, ",")
 	priorityFilters := make([]core.TaskFilter, 0, len(priorities))
-	
+
 	for _, p := range priorities {
 		p = strings.TrimSpace(p)
 		if p != "" {
 			priorityFilters = append(priorityFilters, &core.PriorityFilter{Priorities: []string{strings.ToUpper(p)}})
 		}
 	}
-	
+
 	// If we have multiple priorities, use OR filter to match any of them
 	if len(priorityFilters) > 1 {
 		f.parent.AddFilter(&core.OrFilter{Filters: priorityFilters})
 	} else if len(priorityFilters) == 1 {
 		f.parent.AddFilter(priorityFilters[0])
 	}
-	
+
 	return nil
 }
 
@@ -174,24 +173,22 @@ func (f *ProjectFlag) String() string {
 
 func (f *ProjectFlag) Set(value string) error {
 	f.value = value
-	
+
 	if value == "" {
 		return nil
 	}
-	
+
 	projects := strings.Split(value, ",")
 	for i, project := range projects {
 		project = strings.TrimSpace(project)
 		// Remove leading + if present
-		if strings.HasPrefix(project, "+") {
-			project = project[1:]
-		}
+		project = strings.TrimPrefix(project, "+")
 		projects[i] = project
 	}
-	
+
 	filter := &core.ProjectFilter{Projects: projects}
 	f.parent.AddFilter(filter)
-	
+
 	return nil
 }
 
@@ -207,24 +204,22 @@ func (f *ContextFlag) String() string {
 
 func (f *ContextFlag) Set(value string) error {
 	f.value = value
-	
+
 	if value == "" {
 		return nil
 	}
-	
+
 	contexts := strings.Split(value, ",")
 	for i, context := range contexts {
 		context = strings.TrimSpace(context)
 		// Remove leading @ if present
-		if strings.HasPrefix(context, "@") {
-			context = context[1:]
-		}
+		context = strings.TrimPrefix(context, "@")
 		contexts[i] = context
 	}
-	
+
 	filter := &core.ContextFilter{Contexts: contexts}
 	f.parent.AddFilter(filter)
-	
+
 	return nil
 }
 
@@ -241,17 +236,17 @@ func (f *DueTodayFlag) String() string {
 func (f *DueTodayFlag) Set(value string) error {
 	// For boolean flags, presence of the flag is enough
 	f.value = true
-	
+
 	// Create due today filter
 	today := time.Now()
 	tomorrow := time.Date(today.Year(), today.Month(), today.Day()+1, 0, 0, 0, 0, today.Location())
-	
+
 	filter := &core.DueDateFilter{
 		Before: &tomorrow,
 		After:  &today,
 	}
 	f.parent.AddFilter(filter)
-	
+
 	return nil
 }
 
@@ -267,19 +262,19 @@ func (f *DueBeforeFlag) String() string {
 
 func (f *DueBeforeFlag) Set(value string) error {
 	f.value = value
-	
+
 	if value == "" {
 		return nil
 	}
-	
+
 	date, err := time.Parse("2006-01-02", value)
 	if err != nil {
 		return fmt.Errorf("invalid date format: %v", err)
 	}
-	
+
 	filter := &core.DueDateFilter{Before: &date}
 	f.parent.AddFilter(filter)
-	
+
 	return nil
 }
 
@@ -295,19 +290,19 @@ func (f *CreatedAfterFlag) String() string {
 
 func (f *CreatedAfterFlag) Set(value string) error {
 	f.value = value
-	
+
 	if value == "" {
 		return nil
 	}
-	
+
 	date, err := time.Parse("2006-01-02", value)
 	if err != nil {
 		return fmt.Errorf("invalid date format: %v", err)
 	}
-	
+
 	filter := &core.CreatedDateFilter{After: &date}
 	f.parent.AddFilter(filter)
-	
+
 	return nil
 }
 
@@ -323,14 +318,14 @@ func (f *TagFlag) String() string {
 
 func (f *TagFlag) Set(value string) error {
 	f.value = value
-	
+
 	if value == "" {
 		return nil
 	}
-	
+
 	filter := &core.TagFilter{Tag: value}
 	f.parent.AddFilter(filter)
-	
+
 	return nil
 }
 
@@ -346,13 +341,13 @@ func (f *RegexFlag) String() string {
 
 func (f *RegexFlag) Set(value string) error {
 	f.value = value
-	
+
 	if value == "" {
 		return nil
 	}
-	
+
 	filter := &core.RegexFilter{Pattern: value}
 	f.parent.AddFilter(filter)
-	
+
 	return nil
 }
