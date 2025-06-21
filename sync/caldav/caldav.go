@@ -84,6 +84,16 @@ func (p *CalDAVProvider) Sync(repo *core.Repository, filter core.TaskFilter, mod
 	return p.Import(repo, filter, modifier)
 }
 
+// ProvidesImport returns true if this provider supports importing tasks
+func (p *CalDAVProvider) ProvidesImport() bool {
+	return true
+}
+
+// ProvidesExport returns true if this provider supports exporting tasks
+func (p *CalDAVProvider) ProvidesExport() bool {
+	return false
+}
+
 // taskToString converts a Task to a todo.txt string
 func taskToString(task core.Task) string {
 	todoTxt := ""
@@ -174,6 +184,3 @@ func NewCalDAVProviderFactory() sync.SyncProviderFactory {
 }
 
 // Register the CalDAV provider factory
-func init() {
-	sync.Register("caldav", NewCalDAVProviderFactory())
-}

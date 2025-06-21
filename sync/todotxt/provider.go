@@ -3,9 +3,9 @@ package todo
 import (
 	"fmt"
 	"os"
-	
+
 	todotxtlib "github.com/1set/todotxt"
-	
+
 	"t5.mkbrechtel.dev/t5/core"
 	"t5.mkbrechtel.dev/t5/sync"
 	"t5.mkbrechtel.dev/t5/utils"
@@ -45,7 +45,7 @@ func (p *TodoTxtProvider) SupportedDirections() []sync.SyncDirection {
 // Import imports tasks from the todo.txt file into the t5 repository
 func (p *TodoTxtProvider) Import(repo *core.Repository, filter core.TaskFilter, modifier core.TaskModifier) (*sync.SyncResult, error) {
 	result := &sync.SyncResult{}
-	
+
 	// Read the todo.txt file
 	todoList, err := ReadTodoFile(p.filePath)
 	if err != nil {
@@ -55,17 +55,17 @@ func (p *TodoTxtProvider) Import(repo *core.Repository, filter core.TaskFilter, 
 		}
 		return nil, err
 	}
-	
+
 	// Get current application state
 	appState := repo.GetAppState()
-	
+
 	// First pass - collect tasks without UUIDs and with UUIDs
 	todoTasksByUUID := make(map[string]*todotxtlib.Task)
 	tasksWithoutUUID := make([]*todotxtlib.Task, 0)
-	
+
 	for i := range todoList {
 		task := &todoList[i]
-		
+
 		// Apply filter if provided
 		if filter != nil {
 			repoTask := todoTaskToRepoTask(*task)
@@ -74,7 +74,7 @@ func (p *TodoTxtProvider) Import(repo *core.Repository, filter core.TaskFilter, 
 				continue
 			}
 		}
-		
+
 		// Check if task has UUID
 		if uuid, exists := task.AdditionalTags["uuid"]; exists && uuid != "" {
 			todoTasksByUUID[uuid] = task
@@ -82,7 +82,7 @@ func (p *TodoTxtProvider) Import(repo *core.Repository, filter core.TaskFilter, 
 			tasksWithoutUUID = append(tasksWithoutUUID, task)
 		}
 	}
-	
+
 	// Second pass - check for updates from todo.txt to repo
 	for uuidStr, todoTask := range todoTasksByUUID {
 		id, err := utils.DecodeUUID(uuidStr)
@@ -98,12 +98,12 @@ func (p *TodoTxtProvider) Import(repo *core.Repository, filter core.TaskFilter, 
 					} else {
 						// Convert to repo task
 						repoTask := todoTaskToRepoTask(*todoTask)
-						
+
 						// Apply modifier if provided
 						if modifier != nil {
 							repoTask = modifier.ModifyTask(repoTask)
 						}
-						
+
 						// Update repository from todo.txt changes
 						todoTxtContent := todoTaskToString(repoTask)
 						event := core.NewTodoTxtTaskUpdate(todoTxtContent, p.filePath)
@@ -119,12 +119,12 @@ func (p *TodoTxtProvider) Import(repo *core.Repository, filter core.TaskFilter, 
 			} else {
 				// Convert to repo task
 				repoTask := todoTaskToRepoTask(*todoTask)
-				
+
 				// Apply modifier if provided
 				if modifier != nil {
 					repoTask = modifier.ModifyTask(repoTask)
 				}
-				
+
 				// Task exists in todo.txt but not in repo or has invalid UUID - add it
 				todoTxtContent := todoTaskToString(repoTask)
 				event := core.NewTodoTxtTaskUpdate(todoTxtContent, p.filePath)
@@ -136,17 +136,17 @@ func (p *TodoTxtProvider) Import(repo *core.Repository, filter core.TaskFilter, 
 			}
 		}
 	}
-	
+
 	// Handle tasks without UUIDs - create them in the repository
 	for _, task := range tasksWithoutUUID {
 		// Convert to repo task
 		repoTask := todoTaskToRepoTask(*task)
-		
+
 		// Apply modifier if provided
 		if modifier != nil {
 			repoTask = modifier.ModifyTask(repoTask)
 		}
-		
+
 		// Create new task in repository
 		todoTxtContent := todoTaskToString(repoTask)
 		event := core.NewTodoTxtTaskUpdate(todoTxtContent, p.filePath)
@@ -156,21 +156,21 @@ func (p *TodoTxtProvider) Import(repo *core.Repository, filter core.TaskFilter, 
 		}
 		result.Added++
 	}
-	
+
 	return result, nil
 }
 
 // Export exports tasks from the t5 repository to the todo.txt file
 func (p *TodoTxtProvider) Export(repo *core.Repository, filter core.TaskFilter, modifier core.TaskModifier) (*sync.SyncResult, error) {
 	result := &sync.SyncResult{}
-	
+
 	// Get current application state
 	appState := repo.GetAppState()
-	
+
 	// Read existing todo.txt file if it exists
 	var todoList todotxtlib.TaskList
 	var err error
-	
+
 	todoList, err = ReadTodoFile(p.filePath)
 	if err != nil {
 		// If file doesn't exist, create an empty one
@@ -180,10 +180,10 @@ func (p *TodoTxtProvider) Export(repo *core.Repository, filter core.TaskFilter, 
 			return nil, err
 		}
 	}
-	
+
 	// Map of UUID to todo.txt tasks for easier lookup
 	todoTasksByUUID := make(map[string]*todotxtlib.Task)
-	
+
 	// Build lookup map
 	for i := range todoList {
 		task := &todoList[i]
@@ -191,32 +191,32 @@ func (p *TodoTxtProvider) Export(repo *core.Repository, filter core.TaskFilter, 
 			todoTasksByUUID[uuid] = task
 		}
 	}
-	
+
 	// Export all relevant repository tasks to todo.txt
 	var tasksToWrite []todotxtlib.Task
-	
+
 	// Keep track of which tasks were processed
 	processedTasks := make(map[string]bool)
-	
+
 	for id, repoTask := range appState.Tasks {
 		// Skip tasks that aren't from this todo.txt file and don't match filter
 		if filter != nil && !filter.FilterTask(repoTask) {
 			continue
 		}
-		
+
 		// Skip tasks marked as deleted
 		if _, isDeleted := repoTask.AdditionalTags["deleted"]; isDeleted {
 			continue
 		}
-		
+
 		// Apply modifier if provided
 		if modifier != nil {
 			repoTask = modifier.ModifyTask(repoTask)
 		}
-		
+
 		// Convert to todo.txt task
 		todoTask := repoTaskToTodoTask(repoTask)
-		
+
 		// Check if task exists in todo.txt
 		uuidStr := id.String()
 		if existingTask, exists := todoTasksByUUID[uuidStr]; exists {
@@ -231,7 +231,7 @@ func (p *TodoTxtProvider) Export(repo *core.Repository, filter core.TaskFilter, 
 			result.ToSource++
 		}
 	}
-	
+
 	// Add existing tasks that weren't updated (avoiding duplicates)
 	for i := range todoList {
 		task := todoList[i]
@@ -244,13 +244,13 @@ func (p *TodoTxtProvider) Export(repo *core.Repository, filter core.TaskFilter, 
 			tasksToWrite = append(tasksToWrite, task)
 		}
 	}
-	
+
 	// Write changes to todo.txt
 	err = WriteTodoFile(tasksToWrite, p.filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to write tasks to todo.txt: %w", err)
 	}
-	
+
 	return result, nil
 }
 
@@ -261,13 +261,13 @@ func (p *TodoTxtProvider) Sync(repo *core.Repository, filter core.TaskFilter, mo
 	if err != nil {
 		return nil, fmt.Errorf("import failed: %w", err)
 	}
-	
+
 	// Then export from repository to todo.txt
 	exportResult, err := p.Export(repo, filter, modifier)
 	if err != nil {
 		return nil, fmt.Errorf("export failed: %w", err)
 	}
-	
+
 	// Combine results
 	result := &sync.SyncResult{
 		Added:      importResult.Added,
@@ -277,29 +277,39 @@ func (p *TodoTxtProvider) Sync(repo *core.Repository, filter core.TaskFilter, mo
 		FromSource: importResult.FromSource,
 		ToSource:   exportResult.ToSource,
 	}
-	
+
 	return result, nil
+}
+
+// ProvidesImport returns true if this provider supports importing tasks
+func (p *TodoTxtProvider) ProvidesImport() bool {
+	return true
+}
+
+// ProvidesExport returns true if this provider supports exporting tasks
+func (p *TodoTxtProvider) ProvidesExport() bool {
+	return true
 }
 
 // todoTaskToRepoTask converts a todo.txt task to a repository task
 func todoTaskToRepoTask(task todotxtlib.Task) core.Task {
 	repoTask := core.Task{
-		Todo:           task.Todo,
-		Priority:       task.Priority,
-		Projects:       task.Projects,
-		Contexts:       task.Contexts,
-		Completed:      task.Completed,
-		CreatedDate:    task.CreatedDate,
-		DueDate:        task.DueDate,
-		CompletedDate:  task.CompletedDate,
+		Todo:          task.Todo,
+		Priority:      task.Priority,
+		Projects:      task.Projects,
+		Contexts:      task.Contexts,
+		Completed:     task.Completed,
+		CreatedDate:   task.CreatedDate,
+		DueDate:       task.DueDate,
+		CompletedDate: task.CompletedDate,
 	}
-	
+
 	// Copy additional tags
 	repoTask.AdditionalTags = make(map[string]string)
 	for k, v := range task.AdditionalTags {
 		repoTask.AdditionalTags[k] = v
 	}
-	
+
 	// Set UUID if it exists
 	if uuid, exists := task.AdditionalTags["uuid"]; exists && uuid != "" {
 		id, err := utils.DecodeUUID(uuid)
@@ -307,7 +317,7 @@ func todoTaskToRepoTask(task todotxtlib.Task) core.Task {
 			repoTask.ID = id
 		}
 	}
-	
+
 	return repoTask
 }
 
@@ -315,7 +325,7 @@ func todoTaskToRepoTask(task todotxtlib.Task) core.Task {
 func todoTaskToString(task core.Task) string {
 	// Convert to todo.txt task
 	todoTask := repoTaskToTodoTask(task)
-	
+
 	// Convert to string
 	return todoTask.String()
 }
@@ -328,12 +338,7 @@ func NewTodoTxtProviderFactory() sync.SyncProviderFactory {
 		if !ok {
 			return nil, fmt.Errorf("missing or invalid file_path parameter for todo.txt provider")
 		}
-		
+
 		return NewTodoTxtProvider(filePath), nil
 	}
-}
-
-// Register the todo.txt provider factory
-func init() {
-	sync.Register("todotxt", NewTodoTxtProviderFactory())
 }

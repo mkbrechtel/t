@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	todo "github.com/1set/todotxt"
+
+	todotxtlib "github.com/1set/todotxt"
 )
 
 // FileError represents an error that occurred during file operations
@@ -20,7 +21,7 @@ func (e *FileError) Error() string {
 
 // ReadTodoFile reads a todo.txt file and returns a TaskList
 // If the file doesn't exist, it creates an empty one
-func ReadTodoFile(path string) (todo.TaskList, error) {
+func ReadTodoFile(path string) (todotxtlib.TaskList, error) {
 	// Try to open the file
 	file, err := os.Open(path)
 	if err != nil {
@@ -32,13 +33,13 @@ func ReadTodoFile(path string) (todo.TaskList, error) {
 				return nil, &FileError{Op: "create", Path: path, Err: err}
 			}
 			file.Close()
-			return todo.TaskList{}, nil
+			return todotxtlib.TaskList{}, nil
 		}
 		return nil, &FileError{Op: "read", Path: path, Err: err}
 	}
 	defer file.Close()
 
-	taskList, err := todo.LoadFromFile(file)
+	taskList, err := todotxtlib.LoadFromFile(file)
 	if err != nil {
 		return nil, &FileError{Op: "parse", Path: path, Err: err}
 	}
@@ -47,7 +48,7 @@ func ReadTodoFile(path string) (todo.TaskList, error) {
 }
 
 // WriteTodoFile writes a TaskList to a todo.txt file
-func WriteTodoFile(taskList todo.TaskList, path string) error {
+func WriteTodoFile(taskList todotxtlib.TaskList, path string) error {
 	file, err := os.Create(path)
 	if err != nil {
 		return &FileError{Op: "create", Path: path, Err: err}
@@ -63,7 +64,7 @@ func WriteTodoFile(taskList todo.TaskList, path string) error {
 
 // GetTodoFileContent returns the string content of a TaskList
 // This is useful for creating TodoTxtTaskUpdate events
-func GetTodoFileContent(taskList todo.TaskList) (string, error) {
+func GetTodoFileContent(taskList todotxtlib.TaskList) (string, error) {
 	lines := make([]string, 0, len(taskList))
 	for _, task := range taskList {
 		lines = append(lines, task.String())
@@ -72,8 +73,8 @@ func GetTodoFileContent(taskList todo.TaskList) (string, error) {
 }
 
 // ParseTask parses a single todo.txt task line
-func ParseTask(taskLine string) (*todo.Task, error) {
-	task, err := todo.ParseTask(taskLine)
+func ParseTask(taskLine string) (*todotxtlib.Task, error) {
+	task, err := todotxtlib.ParseTask(taskLine)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse task: %w", err)
 	}

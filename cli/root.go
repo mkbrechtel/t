@@ -19,7 +19,7 @@ func Execute(args []string, stdin io.ReadCloser, stdout, stderr io.WriteCloser) 
 	fs := flag.NewFlagSet("t5", flag.ExitOnError)
 	ctx.FlagSet = fs
 
-	// Setup global flags 
+	// Setup global flags
 	ctx.SetupFlags()
 
 	// Set custom usage function
@@ -130,7 +130,7 @@ func Execute(args []string, stdin io.ReadCloser, stdout, stderr io.WriteCloser) 
 	case "sync":
 		// Store all arguments for the sync command to handle multiple providers
 		ctx.Args = cmdArgs[1:]
-		SyncTasks(ctx)
+		SyncTasks(ctx, ctx.Config.TodoFile)
 	case "config":
 		ctx.ShowConfig()
 	case "start":

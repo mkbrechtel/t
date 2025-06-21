@@ -3,7 +3,7 @@ package github
 import (
 	"fmt"
 	"time"
-	
+
 	"t5.mkbrechtel.dev/t5/core"
 	"t5.mkbrechtel.dev/t5/sync"
 	"t5.mkbrechtel.dev/t5/utils"
@@ -51,19 +51,19 @@ func (p *GitHubProvider) SupportedDirections() []sync.SyncDirection {
 // Import imports tasks from GitHub into the t5 repository
 func (p *GitHubProvider) Import(repo *core.Repository, filter core.TaskFilter, modifier core.TaskModifier) (*sync.SyncResult, error) {
 	result := &sync.SyncResult{}
-	
+
 	// Fetch issues
 	issues, err := GetUserIssues(p.token, p.baseURL, p.issuesURL)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch GitHub issues: %w", err)
 	}
-	
+
 	// Create task list from issues
 	taskList := CreateTaskList(issues, p.issuePrefix, p.prPrefix)
-	
+
 	// Get current application state
 	appState := repo.GetAppState()
-	
+
 	// Track tasks by URL for quick lookup
 	tasksByURL := make(map[string]*core.Task)
 	for id, task := range appState.Tasks {
@@ -73,7 +73,7 @@ func (p *GitHubProvider) Import(repo *core.Repository, filter core.TaskFilter, m
 			tasksByURL[url] = &taskCopy
 		}
 	}
-	
+
 	// Process each task from GitHub
 	for _, githubTask := range taskList {
 		url, hasURL := githubTask.AdditionalTags["url"]
@@ -81,7 +81,7 @@ func (p *GitHubProvider) Import(repo *core.Repository, filter core.TaskFilter, m
 			result.Skipped++
 			continue
 		}
-		
+
 		// Convert from todo.txt task to repo task
 		repoTask := core.Task{
 			Todo:      githubTask.Todo,
@@ -90,47 +90,47 @@ func (p *GitHubProvider) Import(repo *core.Repository, filter core.TaskFilter, m
 			Contexts:  githubTask.Contexts,
 			Completed: githubTask.Completed,
 		}
-		
+
 		// Set dates
 		if !githubTask.CreatedDate.IsZero() {
 			repoTask.CreatedDate = githubTask.CreatedDate
 		} else {
 			repoTask.CreatedDate = time.Now()
 		}
-		
+
 		if !githubTask.DueDate.IsZero() {
 			repoTask.DueDate = githubTask.DueDate
 		}
-		
+
 		if !githubTask.CompletedDate.IsZero() {
 			repoTask.CompletedDate = githubTask.CompletedDate
 		}
-		
+
 		// Copy additional tags
 		repoTask.AdditionalTags = make(map[string]string)
 		for k, v := range githubTask.AdditionalTags {
 			repoTask.AdditionalTags[k] = v
 		}
-		
+
 		// Set source
 		repoTask.Source = "github"
-		
+
 		// Apply filter if provided
 		if filter != nil && !filter.FilterTask(repoTask) {
 			result.Skipped++
 			continue
 		}
-		
+
 		// Apply modifier if provided
 		if modifier != nil {
 			repoTask = modifier.ModifyTask(repoTask)
 		}
-		
+
 		// Check if task already exists
 		if existingTask, exists := tasksByURL[url]; exists {
 			// Update existing task if needed
 			repoTask.ID = existingTask.ID // Preserve ID
-			
+
 			// Check if task has changed
 			if taskNeedsUpdate(existingTask, &repoTask) {
 				// Save task update
@@ -155,7 +155,7 @@ func (p *GitHubProvider) Import(repo *core.Repository, filter core.TaskFilter, m
 			result.FromSource++
 		}
 	}
-	
+
 	return result, nil
 }
 
@@ -171,30 +171,40 @@ func (p *GitHubProvider) Sync(repo *core.Repository, filter core.TaskFilter, mod
 	return p.Import(repo, filter, modifier)
 }
 
+// ProvidesImport returns true if this provider supports importing tasks
+func (p *GitHubProvider) ProvidesImport() bool {
+	return true
+}
+
+// ProvidesExport returns true if this provider supports exporting tasks
+func (p *GitHubProvider) ProvidesExport() bool {
+	return false
+}
+
 // taskNeedsUpdate checks if the task needs updating
 func taskNeedsUpdate(existing, source *core.Task) bool {
 	// Check if todo text has changed
 	if existing.Todo != source.Todo {
 		return true
 	}
-	
+
 	// Check if due date has changed
 	if !existing.DueDate.Equal(source.DueDate) {
 		return true
 	}
-	
+
 	// Check if completion status has changed
 	if existing.Completed != source.Completed {
 		return true
 	}
-	
+
 	return false
 }
 
 // taskToString converts a Task to a todo.txt string
 func taskToString(task core.Task) string {
 	todoTxt := ""
-	
+
 	// Add completion mark if completed
 	if task.Completed {
 		todoTxt += "x "
@@ -203,35 +213,35 @@ func taskToString(task core.Task) string {
 			todoTxt += task.CompletedDate.Format("2006-01-02") + " "
 		}
 	}
-	
+
 	// Add priority if available
 	if task.Priority != "" {
 		todoTxt += "(" + task.Priority + ") "
 	}
-	
+
 	// Add creation date if available
 	if !task.CreatedDate.IsZero() {
 		todoTxt += task.CreatedDate.Format("2006-01-02") + " "
 	}
-	
+
 	// Add main text
 	todoTxt += task.Todo
-	
+
 	// Add projects
 	for _, project := range task.Projects {
 		todoTxt += " +" + project
 	}
-	
+
 	// Add contexts
 	for _, context := range task.Contexts {
 		todoTxt += " @" + context
 	}
-	
+
 	// Add due date if available
 	if !task.DueDate.IsZero() {
 		todoTxt += " due:" + task.DueDate.Format("2006-01-02")
 	}
-	
+
 	// Add other tags
 	for key, value := range task.AdditionalTags {
 		// Skip internal tags
@@ -240,10 +250,10 @@ func taskToString(task core.Task) string {
 		}
 		todoTxt += " " + key + ":" + value
 	}
-	
+
 	// Add UUID
 	todoTxt += " uuid:" + utils.LongEncodeUUID(task.ID)
-	
+
 	return todoTxt
 }
 
@@ -255,37 +265,32 @@ func NewGitHubProviderFactory() sync.SyncProviderFactory {
 		if !ok || token == "" {
 			return nil, fmt.Errorf("missing or invalid token parameter for GitHub provider")
 		}
-		
+
 		baseURL, ok := config.Params["base_url"].(string)
 		if !ok || baseURL == "" {
 			baseURL = "https://api.github.com"
 		}
-		
+
 		issuesURL, ok := config.Params["issues_url"].(string)
 		if !ok || issuesURL == "" {
 			issuesURL = "/issues"
 		}
-		
+
 		prsURL, ok := config.Params["prs_url"].(string)
 		if !ok || prsURL == "" {
 			prsURL = "/pulls"
 		}
-		
+
 		issuePrefix, ok := config.Params["issue_prefix"].(string)
 		if !ok {
 			issuePrefix = "GitHub: "
 		}
-		
+
 		prPrefix, ok := config.Params["pr_prefix"].(string)
 		if !ok {
 			prPrefix = "GitHub PR: "
 		}
-		
+
 		return NewGitHubProvider(token, baseURL, issuesURL, prsURL, issuePrefix, prPrefix), nil
 	}
-}
-
-// Register the GitHub provider factory
-func init() {
-	sync.Register("github", NewGitHubProviderFactory())
 }

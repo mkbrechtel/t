@@ -5,37 +5,38 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	
+
 	"github.com/adrg/xdg"
 	yaml "gopkg.in/yaml.v2"
-	
+
 	"t5.mkbrechtel.dev/t5/core"
 	"t5.mkbrechtel.dev/t5/sync"
 )
 
 // AppConfig holds all configuration settings
 type AppConfig struct {
-	TodoFile              string
 	ConfigFile            string
+	TodoFile              string
 	EventStoreFile        string
 	PreferShortIds        bool
 	EnforceCreationDate   bool
 	EnforceCompletionDate bool
-	TodoFiles             []TodoFileConfig        `yaml:"todofiles,omitempty"`
-	SyncProviders         []sync.ProviderConfig  `yaml:"syncproviders,omitempty"`
+	TodoFiles             []TodoFileConfig
+	SyncProviders         []sync.ProviderBaseConfig
+	SyncGroups            []SyncGroupConfig `yaml:"sync_groups,omitempty"`
 }
 
 // DefaultAppConfig returns a configuration with default values
 func DefaultAppConfig() *AppConfig {
 	return &AppConfig{
-		TodoFile:             "todo.txt",
-		ConfigFile:           "",
-		EventStoreFile:       "",
-		PreferShortIds:       true,
-		EnforceCreationDate:  true,
+		TodoFile:              "todo.txt",
+		ConfigFile:            "",
+		EventStoreFile:        "",
+		PreferShortIds:        true,
+		EnforceCreationDate:   true,
 		EnforceCompletionDate: true,
-		TodoFiles:            []TodoFileConfig{},
-		SyncProviders:        []sync.ProviderConfig{},
+		TodoFiles:             []TodoFileConfig{},
+		SyncProviders:         []sync.ProviderBaseConfig{},
 	}
 }
 
@@ -61,7 +62,7 @@ func (ctx *AppContext) SetupFlags() {
 		// If no FlagSet is provided, use the global flag package
 		ctx.FlagSet = flag.CommandLine
 	}
-	
+
 	// Create flag variables
 	ctx.FlagSet.StringVar(&ctx.Config.TodoFile, "todo", ctx.Config.TodoFile, "todo.txt file path")
 	ctx.FlagSet.StringVar(&ctx.Config.TodoFile, "t", ctx.Config.TodoFile, "todo.txt file path (shorthand)")
@@ -93,12 +94,12 @@ func (ctx *AppContext) ShowConfig() {
 	} else {
 		fmt.Println("Event Store: in-memory (changes will not be persisted)")
 	}
-	
+
 	fmt.Println("\nTask Properties:")
 	fmt.Printf("  Prefer Short IDs: %v\n", ctx.Config.PreferShortIds)
 	fmt.Printf("  Enforce Creation Date: %v\n", ctx.Config.EnforceCreationDate)
 	fmt.Printf("  Enforce Completion Date: %v\n", ctx.Config.EnforceCompletionDate)
-	
+
 	// Display additional todo files
 	if len(ctx.Config.TodoFiles) > 0 {
 		fmt.Println("\nAdditional Todo Files:")
@@ -106,7 +107,7 @@ func (ctx *AppContext) ShowConfig() {
 			fmt.Printf("  %s\n", tf.Path)
 		}
 	}
-	
+
 	// Display sync providers
 	if len(ctx.Config.SyncProviders) > 0 {
 		fmt.Println("\nSync Providers:")
@@ -127,18 +128,18 @@ func (ctx *AppContext) GetTodoFiles() []TodoFileConfig {
 		{
 			Path: ctx.Config.TodoFile,
 			Ensure: map[string]bool{
-				"prefershortids":       ctx.Config.PreferShortIds,
+				"prefershortids":        ctx.Config.PreferShortIds,
 				"enforcecompletiondate": ctx.Config.EnforceCompletionDate,
 				"enforcecreationdate":   ctx.Config.EnforceCreationDate,
 			},
 		},
 	}
-	
+
 	// Add any additional todo files configured
 	if len(ctx.Config.TodoFiles) > 0 {
 		todoFiles = append(todoFiles, ctx.Config.TodoFiles...)
 	}
-	
+
 	return todoFiles
 }
 
@@ -182,9 +183,9 @@ func (ctx *AppContext) LoadConfigFile() error {
 				EnforceCompletionDate bool `yaml:"enforcecompletiondate"`
 			} `yaml:"ensure"`
 		} `yaml:"todo"`
-		TodoFiles    []TodoFileConfig      `yaml:"todofiles"`
-		SyncProviders []sync.ProviderConfig `yaml:"syncproviders"`
-		EventStore struct {
+		TodoFiles     []TodoFileConfig          `yaml:"todofiles"`
+		SyncProviders []sync.ProviderBaseConfig `yaml:"syncproviders"`
+		EventStore    struct {
 			File string `yaml:"file"`
 		} `yaml:"eventstore"`
 	}
@@ -197,7 +198,7 @@ func (ctx *AppContext) LoadConfigFile() error {
 	if config.Todo.File != "" && !ctx.IsFlagPassed("todo") && !ctx.IsFlagPassed("t") {
 		cfg.TodoFile = config.Todo.File
 	}
-	
+
 	if config.EventStore.File != "" && !ctx.IsFlagPassed("eventstore") {
 		cfg.EventStoreFile = config.EventStore.File
 	}
@@ -206,20 +207,20 @@ func (ctx *AppContext) LoadConfigFile() error {
 	if !ctx.IsFlagPassed("prefer-short-ids") {
 		cfg.PreferShortIds = config.Todo.Ensure.PreferShortIds
 	}
-	
+
 	if !ctx.IsFlagPassed("enforce-creation-date") {
 		cfg.EnforceCreationDate = config.Todo.Ensure.EnforceCreationDate
 	}
-	
+
 	if !ctx.IsFlagPassed("enforce-completion-date") {
 		cfg.EnforceCompletionDate = config.Todo.Ensure.EnforceCompletionDate
 	}
-	
+
 	// Load additional todo files
 	if len(config.TodoFiles) > 0 {
 		cfg.TodoFiles = config.TodoFiles
 	}
-	
+
 	// Load sync providers
 	if len(config.SyncProviders) > 0 {
 		cfg.SyncProviders = config.SyncProviders
@@ -231,7 +232,7 @@ func (ctx *AppContext) LoadConfigFile() error {
 // InitRepository initializes a repository with the appropriate event store
 func (ctx *AppContext) InitRepository() error {
 	cfg := ctx.Config
-	
+
 	// Check if an event store file is specified
 	eventStoreFile := cfg.EventStoreFile
 	if eventStoreFile == "" {

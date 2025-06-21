@@ -3,7 +3,7 @@ package openproject
 import (
 	"fmt"
 	"time"
-	
+
 	"t5.mkbrechtel.dev/t5/core"
 	"t5.mkbrechtel.dev/t5/sync"
 	"t5.mkbrechtel.dev/t5/utils"
@@ -47,10 +47,10 @@ func (p *OpenProjectProvider) SupportedDirections() []sync.SyncDirection {
 // Import imports tasks from OpenProject into the t5 repository
 func (p *OpenProjectProvider) Import(repo *core.Repository, filter core.TaskFilter, modifier core.TaskModifier) (*sync.SyncResult, error) {
 	result := &sync.SyncResult{}
-	
+
 	// Get current application state
 	appState := repo.GetAppState()
-	
+
 	// Track tasks by URL for quick lookup
 	tasksByURL := make(map[string]*core.Task)
 	for id, task := range appState.Tasks {
@@ -60,7 +60,7 @@ func (p *OpenProjectProvider) Import(repo *core.Repository, filter core.TaskFilt
 			tasksByURL[url] = &taskCopy
 		}
 	}
-	
+
 	// Process each query
 	for _, queryID := range p.queryIDs {
 		// Fetch work packages for this query
@@ -68,10 +68,10 @@ func (p *OpenProjectProvider) Import(repo *core.Repository, filter core.TaskFilt
 		if err != nil {
 			return nil, fmt.Errorf("failed to fetch OpenProject work packages for query %s: %w", queryID, err)
 		}
-		
+
 		// Create task list from work packages
 		taskList := CreateTaskList(workPackages, p.taskPrefix, p.baseURL)
-		
+
 		// Process each task from the task list
 		for _, openProjectTask := range taskList {
 			url, hasURL := openProjectTask.AdditionalTags["url"]
@@ -79,7 +79,7 @@ func (p *OpenProjectProvider) Import(repo *core.Repository, filter core.TaskFilt
 				result.Skipped++
 				continue
 			}
-			
+
 			// Convert from todo.txt task to repo task
 			repoTask := core.Task{
 				Todo:      openProjectTask.Todo,
@@ -88,47 +88,47 @@ func (p *OpenProjectProvider) Import(repo *core.Repository, filter core.TaskFilt
 				Contexts:  openProjectTask.Contexts,
 				Completed: openProjectTask.Completed,
 			}
-			
+
 			// Set dates
 			if !openProjectTask.CreatedDate.IsZero() {
 				repoTask.CreatedDate = openProjectTask.CreatedDate
 			} else {
 				repoTask.CreatedDate = time.Now()
 			}
-			
+
 			if !openProjectTask.DueDate.IsZero() {
 				repoTask.DueDate = openProjectTask.DueDate
 			}
-			
+
 			if !openProjectTask.CompletedDate.IsZero() {
 				repoTask.CompletedDate = openProjectTask.CompletedDate
 			}
-			
+
 			// Copy additional tags
 			repoTask.AdditionalTags = make(map[string]string)
 			for k, v := range openProjectTask.AdditionalTags {
 				repoTask.AdditionalTags[k] = v
 			}
-			
+
 			// Set source
 			repoTask.Source = "openproject"
-			
+
 			// Apply filter if provided
 			if filter != nil && !filter.FilterTask(repoTask) {
 				result.Skipped++
 				continue
 			}
-			
+
 			// Apply modifier if provided
 			if modifier != nil {
 				repoTask = modifier.ModifyTask(repoTask)
 			}
-			
+
 			// Check if task already exists
 			if existingTask, exists := tasksByURL[url]; exists {
 				// Update existing task if needed
 				repoTask.ID = existingTask.ID // Preserve ID
-				
+
 				// Check if task has changed
 				if taskNeedsUpdate(existingTask, &repoTask) {
 					// Save task update
@@ -154,7 +154,7 @@ func (p *OpenProjectProvider) Import(repo *core.Repository, filter core.TaskFilt
 			}
 		}
 	}
-	
+
 	return result, nil
 }
 
@@ -170,37 +170,47 @@ func (p *OpenProjectProvider) Sync(repo *core.Repository, filter core.TaskFilter
 	return p.Import(repo, filter, modifier)
 }
 
+// ProvidesImport returns true if this provider supports importing tasks
+func (p *OpenProjectProvider) ProvidesImport() bool {
+	return true
+}
+
+// ProvidesExport returns true if this provider supports exporting tasks
+func (p *OpenProjectProvider) ProvidesExport() bool {
+	return false
+}
+
 // taskNeedsUpdate checks if the task needs updating
 func taskNeedsUpdate(existing, source *core.Task) bool {
 	// Check if todo text has changed
 	if existing.Todo != source.Todo {
 		return true
 	}
-	
+
 	// Check if due date has changed
 	if !existing.DueDate.Equal(source.DueDate) {
 		return true
 	}
-	
+
 	// Check if completion status has changed
 	if existing.Completed != source.Completed {
 		return true
 	}
-	
+
 	// Check if threshold date has changed
 	existingT, existingHasT := existing.AdditionalTags["t"]
 	sourceT, sourceHasT := source.AdditionalTags["t"]
 	if existingHasT != sourceHasT || existingT != sourceT {
 		return true
 	}
-	
+
 	return false
 }
 
 // taskToString converts a Task to a todo.txt string
 func taskToString(task core.Task) string {
 	todoTxt := ""
-	
+
 	// Add completion mark if completed
 	if task.Completed {
 		todoTxt += "x "
@@ -209,35 +219,35 @@ func taskToString(task core.Task) string {
 			todoTxt += task.CompletedDate.Format("2006-01-02") + " "
 		}
 	}
-	
+
 	// Add priority if available
 	if task.Priority != "" {
 		todoTxt += "(" + task.Priority + ") "
 	}
-	
+
 	// Add creation date if available
 	if !task.CreatedDate.IsZero() {
 		todoTxt += task.CreatedDate.Format("2006-01-02") + " "
 	}
-	
+
 	// Add main text
 	todoTxt += task.Todo
-	
+
 	// Add projects
 	for _, project := range task.Projects {
 		todoTxt += " +" + project
 	}
-	
+
 	// Add contexts
 	for _, context := range task.Contexts {
 		todoTxt += " @" + context
 	}
-	
+
 	// Add due date if available
 	if !task.DueDate.IsZero() {
 		todoTxt += " due:" + task.DueDate.Format("2006-01-02")
 	}
-	
+
 	// Add other tags
 	for key, value := range task.AdditionalTags {
 		// Skip internal tags
@@ -246,10 +256,10 @@ func taskToString(task core.Task) string {
 		}
 		todoTxt += " " + key + ":" + value
 	}
-	
+
 	// Add UUID
 	todoTxt += " uuid:" + utils.LongEncodeUUID(task.ID)
-	
+
 	return todoTxt
 }
 
@@ -261,19 +271,19 @@ func NewOpenProjectProviderFactory() sync.SyncProviderFactory {
 		if !ok || baseURL == "" {
 			return nil, fmt.Errorf("missing or invalid base_url parameter for OpenProject provider")
 		}
-		
+
 		apiKey, ok := config.Params["api_key"].(string)
 		if !ok || apiKey == "" {
 			return nil, fmt.Errorf("missing or invalid api_key parameter for OpenProject provider")
 		}
-		
+
 		// Get query IDs as an array
 		var queryIDs []string
 		queryIDsInterface, ok := config.Params["query_ids"]
 		if !ok {
 			return nil, fmt.Errorf("missing query_ids parameter for OpenProject provider")
 		}
-		
+
 		// Handle different ways query_ids could be specified
 		switch v := queryIDsInterface.(type) {
 		case []interface{}:
@@ -286,17 +296,12 @@ func NewOpenProjectProviderFactory() sync.SyncProviderFactory {
 		default:
 			return nil, fmt.Errorf("invalid query_ids parameter for OpenProject provider, must be a string or array of strings")
 		}
-		
+
 		taskPrefix, ok := config.Params["task_prefix"].(string)
 		if !ok {
 			taskPrefix = "OpenProject: "
 		}
-		
+
 		return NewOpenProjectProvider(baseURL, apiKey, queryIDs, taskPrefix), nil
 	}
-}
-
-// Register the OpenProject provider factory
-func init() {
-	sync.Register("openproject", NewOpenProjectProviderFactory())
 }
